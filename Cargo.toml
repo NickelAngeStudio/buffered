@@ -1,13 +1,14 @@
 [package]
-name = "buffered"
-version = "0.0.0"
+name = "tampon"
+version = "1.0.0"
 authors = ["Baphomat <baphomat@nickelange.studio>"]
 edition = "2021"
-description = "Contains a collection of tools and macros used to generate and manage buffers."
+description = "Contains a SAFE collection of functions, macros and trait to generate and manage buffers."
 keywords = ["buffer", "buffers", "tools", "generate", "graphics"]
 categories = ["data-structures", "encoding", "caching", "cryptography"]
-repository = "https://github.com/NickelAngeStudio/buffered"
+repository = "https://github.com/NickelAngeStudio/tampon"
 license = "MIT"
+readme = "README.md"
 
 [dependencies]
 rand = "0.8.5"
