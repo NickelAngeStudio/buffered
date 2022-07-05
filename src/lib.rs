@@ -26,6 +26,11 @@ pub mod tampon;
 #[doc(hidden)]
 pub mod bytes_size;
 
+/// to_buffer macro
+#[doc(hidden)]
+pub mod to_buffer;
+
+
 // Tests module folder
 #[cfg(test)]
 mod test;

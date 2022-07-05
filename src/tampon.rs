@@ -37,7 +37,7 @@ pub trait Tampon {
     /// * `buffer` - Mutable slice reference to buffer to write into. 
     /// # Return
     /// Size of bytes written into buffer.
-    fn to_buffer(&self, buffer : &mut Vec<u8>) -> usize;
+    fn to_buffer(&self, buffer : &mut [u8]) -> usize;
 
     /// Update the implementation variables values from the buffer and return bytes read. Need a mutable reference to [`self`].
     /// 
@@ -46,5 +46,5 @@ pub trait Tampon {
     /// * `buffer` - Slice reference to buffer to read from. 
     /// # Return
     /// Size of bytes read from buffer.
-    fn from_buffer(&mut self, buffer : &Vec<u8>) -> usize;
+    fn from_buffer(&mut self, buffer : &[u8]) -> usize;
 }

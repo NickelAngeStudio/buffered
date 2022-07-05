@@ -23,7 +23,7 @@
 
 use std::vec;
 
-use tampon::{Tampon, bytes_size};
+use tampon::{Tampon, bytes_size, to_buffer};
 
 // Struct used to test Tampon traits in macros
  pub struct TestStruct {
@@ -59,15 +59,41 @@ use tampon::{Tampon, bytes_size};
 
 impl Tampon for TestStruct {
     fn bytes_size(&self) -> usize {
-        bytes_size!(p(self.f1,u8),p(self.f2,u32),p(self.f3,f64),t(self.f4,InnerStruct),ps(self.v1, u8), ps(self.v2,f64), ts(self.v3,InnerStruct))
+        bytes_size!(n(self._f1,u8),n(self._f2,u32),n(self._f3,f64),t(self.f4,InnerStruct),ns(self.v1, u8), 
+        ns(self.v2,f64), ts(self.v3,InnerStruct))
     }
 
-    fn to_buffer(&self, buffer : &mut Vec<u8>) -> usize {
-        //TODO
-        0
+    fn to_buffer(&self, buffer : &mut [u8]) -> usize {
+
+0
+        //to_buffer!(buffer, 0, 
+        //    p(self._f1,u8))
+
+        /*
+        let r:usize = to_buffer!(&mut buffer, 0, 
+            p(self._f1,u8),
+            p(self._f2,u32),
+            p(self._f3,f64),
+            ps(self.v1, u8),
+            ps(self.v2,f64));
+
+            r
+*/
+        /*
+        to_buffer!(&mut buffer, 0, 
+            p(self._f1,u8),
+            p(self._f2,u32),
+            p(self._f3,f64),
+            t(self.f4,InnerStruct),
+            ps(self.v1, u8),
+            ps(self.v2,f64), 
+            ts(self.v3,InnerStruct))
+            */
+
+
     }
 
-    fn from_buffer(&mut self, buffer : &Vec<u8>) -> usize {
+    fn from_buffer(&mut self, buffer : &[u8]) -> usize {
         //TODO
         0
     }
@@ -90,28 +116,16 @@ impl Tampon for TestStruct {
 
  impl Tampon for InnerStruct {
     fn bytes_size(&self) -> usize {
-        bytes_size!(p(self.f1,u8),p(self.f2,i128))
+        bytes_size!(n(self._f1,u8),n(self._f2,i128))
     }
 
-    fn to_buffer(&self, buffer : &mut Vec<u8>) -> usize {
-        //TODO
+    fn to_buffer(&self, buffer : &mut [u8]) -> usize {
+        //to_buffer!(buffer,0,p(self._f1,u8),p(self._f2,i128))
         0
     }
 
-    fn from_buffer(&mut self, buffer : &Vec<u8>) -> usize {
+    fn from_buffer(&mut self, buffer : &[u8]) -> usize {
         //TODO
         0
     }
-}
-
-// Create a vector of TestStruct
-pub fn vec_of_test_struct(size:usize) -> Vec<TestStruct>{
-
-    let mut vec_ts: Vec<TestStruct> = Vec::new();
-
-    for i in 0..size {
-        vec_ts.push(TestStruct::new(i as u8, i as u32, i as f64, i * 10 + 1));
-    }
-
-    vec_ts
 }

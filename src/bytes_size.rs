@@ -22,9 +22,20 @@
  * 
  */
 
-/// ##### Variadic macro used to get the size of bytes of multiple primitives, vectors and implementors of trait [`Tampon`](trait.Tampon.html). 
+/// ##### Variadic macro used to get the size of bytes of [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html). 
 /// 
-/// Variadic macro used to get the size of bytes of multiple primitives, vectors and implementors of trait [`Tampon`](trait.Tampon.html). 
+/// Variadic macro used to get the size of bytes of [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
+/// 
+/// Also work with [`slice`] of those types.
+///
+/// # Argument(s)
+/// * `<token>(var,type)` - 1..n variables to get size of according to `<token>` types :
+///     * `n` - Count bytes of [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html).
+///     * `ns` - Count bytes of [`slice`] of [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html).
+///     * `s` - Count bytes of [`String`].
+///     * `ss` - Count bytes of [`slice`] of [`String`].
+///     * `t` - Count bytes of implementors of [`Tampon`](trait.Tampon.html) trait.
+///     * `ts` - Count bytes of [`slice`] of implementors of [`Tampon`](trait.Tampon.html) trait.
 /// 
 /// # Example(s)
 /// ```
@@ -32,39 +43,52 @@
 /// ```
 /// 
 /// # Note(s)
-/// * Works only with [`primitive`](https://doc.rust-lang.org/rust-by-example/primitives.html), [`slice`] of primitives
-/// and implementors of trait [`Tampon`](trait.Tampon.html).
+/// * Works only with [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
 /// 
-/// # Argument(s)
-/// * `<token>(var,type)` - 1..n variables to get size of according to `<token>` types :
-///     * `p` - Count bytes of primitive.
-///     * `ps` - Count bytes of [`slice`] of primitives.
-///     * `t` - Count bytes of implementors of [`Tampon`](trait.Tampon.html) trait.
-///     * `ts` - Count bytes of [`slice`] of implementors of [`Tampon`](trait.Tampon.html) trait.
 #[macro_export]
 macro_rules! bytes_size {
 
-    // Non-variadic with only primitive
-    (p ($primitive:expr, $type:ty)) => {
-        // Return size of primitive
-        //core::mem::size_of::<$type>()
+    // Numeric types
+    (n ($numeric:expr, $type:ty)) => {{
+        // Return size of numeric
         core::mem::size_of::<$type>()
-    };
+    } as usize };
 
-    // Non-variadic with slice of primitives
-    (ps ($primitives:expr, $type:ty)) => {
-        // Return size of primitive
-        core::mem::size_of::<$type>() * $primitives.len()
-    };
+    // Slice of numeric types
+    (ns ($numerics:expr, $type:ty)) => {{
+        // Return size of numerics
+        core::mem::size_of::<$type>() * $numerics.len()
+    } as usize };
 
-    // Non-variadic with trait Tampon implementator
-    (t ($tampon:expr, $type:ty)) => {
+    // String
+    (s ($string:expr, $type:ty)) => {{
+        // Return size of string (https://doc.rust-lang.org/std/string/struct.String.html#method.len-1)
+        $string.len()
+    } as usize };
+
+    // Slice of strings
+    (ss ($strings:expr, $type:ty)) => {{
+
+        let mut bytes_size:usize = 0;
+
+        // Take size of each string
+        for elem in $strings.iter() {
+            bytes_size += elem.len();
+        }
+
+        // Return size of strings
+        bytes_size
+
+    } as usize };
+
+    // Tampon trait implementor
+    (t ($tampon:expr, $type:ty)) => {{
         // Return size of trait
         $tampon.bytes_size()
-    };
+    } as usize };
 
-    // Non-variadic with slice of Tampon implementator
-    (ts ($tampons:expr, $type:ty)) => {
+    // Slice of Tampon trait implementator
+    (ts ($tampons:expr, $type:ty)) => {{
 
         if $tampons.len() > 0 {
             $tampons[0].bytes_size() * $tampons.len()
@@ -73,55 +97,10 @@ macro_rules! bytes_size {
             // Return 0 if no elements in traits slice
             0
         }
-    };
+    } as usize };
 
-    // Variadic with primitive
-    (p ($primitive:expr, $type:ty), $($token:tt ($ext_expr:expr, $ext_type:ty)), *) => {
-        // Return size of primitive
-        core::mem::size_of::<$type>() + bytes_size!($($token($ext_expr, $ext_type)), *)
-    };
-
-    // Variadic with slice of primitives
-    (ps ($primitives:expr, $type:ty), $($token:tt ($ext_expr:expr, $ext_type:ty)), *) => {
-        // Return size of primitive
-        core::mem::size_of::<$type>() * $primitives.len() + bytes_size!($($token($ext_expr, $ext_type)), *)
-    };
-
-    // Variadic with trait Tampon implementator
-    (t ($tampon:expr, $type:ty), $($token:tt ($ext_expr:expr, $ext_type:ty)), *) => {
-        // Return size of trait
-        $tampon.bytes_size() + bytes_size!($($token($ext_expr, $ext_type)), *)
-    };
-
-    // Variadic with slice of Tampon implementator
-    (ts ($tampons:expr, $type:ty), $($token:tt ($ext_expr:expr, $ext_type:ty)), *) => {
-
-        if $tampons.len() > 0 {
-            $tampons[0].bytes_size() * $tampons.len() + bytes_size!($($token($ext_expr, $ext_type)), *)
-        } 
-        else {
-            // Return 0 if no elements in traits slice
-            0 + bytes_size!($($token($ext_expr, $ext_type)), *)
-        }
-    };
-
-
-
-
-}
-
-
-#[cfg(test)]
-mod test{
-    #[test]
-    fn test_mac() {
-        let a:u8 = 35;
-        let b = 655535;
-        let size = bytes_size!( 
-            p(a, u8),
-            p(b, i32)
-        );
-
-        println!("Size={}", size);
-    }
+    // Variadic pattern match
+    ($token:tt ($expr:expr, $type:ty), $($ext_token:tt ($ext_expr:expr, $ext_type:ty)), *) => {{
+        bytes_size!($token ($expr, $type)) + bytes_size!($($ext_token($ext_expr, $ext_type)), *)
+    } as usize };
 }
