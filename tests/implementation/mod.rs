@@ -59,13 +59,12 @@ use tampon::{Tampon, bytes_size, to_buffer};
 
 impl Tampon for TestStruct {
     fn bytes_size(&self) -> usize {
-        bytes_size!(n(self._f1,u8),n(self._f2,u32),n(self._f3,f64),t(self.f4,InnerStruct),ns(self.v1, u8), 
-        ns(self.v2,f64), ts(self.v3,InnerStruct))
+        bytes_size!(N(self._f1, self._f2, self._f3), T(self.f4), N[self.v1, self.v2], T[self.v3])
     }
 
     fn to_buffer(&self, buffer : &mut [u8]) -> usize {
 
-0
+        0
         //to_buffer!(buffer, 0, 
         //    p(self._f1,u8))
 
@@ -116,7 +115,7 @@ impl Tampon for TestStruct {
 
  impl Tampon for InnerStruct {
     fn bytes_size(&self) -> usize {
-        bytes_size!(n(self._f1,u8),n(self._f2,i128))
+        bytes_size!(N(self._f1, self._f2))
     }
 
     fn to_buffer(&self, buffer : &mut [u8]) -> usize {

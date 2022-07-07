@@ -4,7 +4,7 @@
  pub use generate::buffer_generator_charset as buffer_generator_charset;
  pub use wipe::wipe_buffer as wipe_buffer;
  pub use compare::compare_buffers as compare_buffers;
- pub use tampon::Tampon as Tampon;
+ pub use crate::tampon::Tampon as Tampon;
 
 /// Generate buffer
 #[doc(hidden)]

@@ -22,13 +22,106 @@
  */
 
 
-use tampon::to_buffer;
+use tampon::{to_buffer, compare_buffers};
 
 use crate::{data::{DataNumerics, macro_test_validation, DataTampons, DataNumericsSlices, DataTamponsSlices}, implementation::TestStruct};
 
 
 
+
 // TODO:Test without enough space
+
+#[test]
+// Test to_buffer with 1 numeric type
+fn to_buffer_1_numeric(){
+    let n = DataNumerics::new();
+    let size = n.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
+    let expected:Vec<u8> = vec![255;1];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N(n.n1))
+    ));
+
+    println!("Buffer={:?}\nExpected={:?}", buffer, expected);
+    assert!(compare_buffers(&buffer, &expected) == 0);
+    
+}
+ 
+#[test]
+// Test to_buffer with 2 numeric type
+fn to_buffer_2_numeric(){
+
+
+    let n = DataNumerics::new();
+    let size = n.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
+    let expected:Vec<u8> = vec![255;3];
+
+  
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N(n.n1, n.n2))
+    ));
+
+
+    println!("Buffer={:?}\nExpected={:?}", buffer, expected);
+    assert!(compare_buffers(&buffer, &expected) == 0);
+
+}
+
+#[test]
+// Test to_buffer with 10 numeric type
+fn to_buffer_10_numeric(){
+
+    let n = DataNumerics::new();
+    let size = n.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
+    let expected:Vec<u8> = vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 127, 255, 255, 255, 255, 255, 255, 239, 127, 127, 255, 127, 255, 255, 255, 127];
+
+  
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N(n.n1, n.n2, n.n3, n.n4, n.n5, n.n6, n.n7, n.n8, n.n9, n.n10))
+    ));
+
+
+    println!("Buffer={:?}\nExpected={:?}", buffer, expected);
+    assert!(compare_buffers(&buffer, &expected) == 0);
+
+}
+
+
+#[test]
+// Test to_buffer with 1 slice of numeric
+fn to_buffer_1_numeric_slice(){
+
+    let ns = DataNumericsSlices::new();
+    let size = ns.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
+   
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N[ns.ns1])
+    ));
+
+    println!("Buffer={:?}", buffer);
+}
+
+/*
+#[test]
+// Test to_buffer with 2 slice of numeric
+fn to_buffer_2_numeric_slice(){
+
+    let ns = DataNumericsSlices::new();
+    let size = ns.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
+   
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, NS[ns.ns1, ns.ns2])
+    ));
+
+    println!("Buffer={:?}", buffer);
+}
+*/
+
 
 /*
 #[test]

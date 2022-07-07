@@ -525,34 +525,54 @@ impl DataTamponsSlices {
         let mut size : usize = 0;
 
         if var_count >= 1 {
-            size += self.ts1[0].bytes_size() * self.ts1.len()
+            for elem in self.ts1.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 2 {
-            size += self.ts2[0].bytes_size() * self.ts2.len()
+            for elem in self.ts2.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 3 {
-            size += self.ts3[0].bytes_size() * self.ts3.len()
+            for elem in self.ts3.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 4 {
-            size += self.ts4[0].bytes_size() * self.ts4.len()
+            for elem in self.ts4.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 5 {
-            size += self.ts5[0].bytes_size() * self.ts5.len()
+            for elem in self.ts5.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 6 {
-            size += self.ts6[0].bytes_size() * self.ts6.len()
+            for elem in self.ts6.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 7 {
-            size += self.ts7[0].bytes_size() * self.ts7.len()
+            for elem in self.ts7.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 8 {
-            size += self.ts8[0].bytes_size() * self.ts8.len()
+            for elem in self.ts8.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 9 {
-            size += self.ts9[0].bytes_size() * self.ts9.len()
+            for elem in self.ts9.iter() {
+                size += elem.bytes_size();
+            }
         }
         if var_count >= 10 {
-            size += self.ts10[0].bytes_size() * self.ts10.len()
+            for elem in self.ts10.iter() {
+                size += elem.bytes_size();
+            }
         }
 
         size
@@ -562,7 +582,7 @@ impl DataTamponsSlices {
 // Print macro test result and assert.
 pub fn macro_test_validation(expected:usize, result:usize) -> bool {
 
-    println!("Expected={}, Result={}, Diff={}",result, expected, if expected > result {
+    println!("Bytes size | Expected={}, Result={}, Diff={}", expected, result, if expected > result {
         expected - result
     } else {
         result - expected
@@ -578,7 +598,7 @@ pub fn vec_of_test_struct(size:usize) -> Vec<TestStruct>{
     let mut vects: Vec<TestStruct> = Vec::new();
 
     for i in 0..size {
-        vects.push(TestStruct::new(i as u8, i as u32, i as f64, i * 10 + 1));
+        vects.push(TestStruct::new(i as u8, i as u32, i as f64, SLICESIZE));
     }
 
     vects

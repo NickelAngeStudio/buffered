@@ -51,9 +51,153 @@
 #[macro_export]
 macro_rules! to_buffer {
 
-    () => {
+    // Numeric types
+    ($buffer:expr, $index:expr, N($numeric:expr))=> {{
+        
+        // Get expression in slice of little endian bytes
+        let src = $numeric.to_le_bytes();
 
-    };
+        // Copy to buffer via copy from slice
+        $buffer[$index..($index + src.len())].copy_from_slice(&src);
+
+        // Return bytes count
+        src.len()
+
+    } as usize };
+
+/*
+    // Slice of numeric types
+    ($buffer:expr, $index:expr, NS[$numerics:expr]) => {{
+
+        // To accumulate bytes
+        let mut bytes_size:usize = 0;
+
+        // Take copy and get bytes size of each element
+        for elem in $numerics.iter() {
+            bytes_size += to_buffer!($buffer, $index + bytes_size, n (*elem));
+        }
+
+        // Return bytes count
+        bytes_size
+
+    } as usize };
+*/
+
+    // String
+    ($buffer:expr, $index:expr, S($string:expr)) => {{
+        // Return size of string (https://doc.rust-lang.org/std/string/struct.String.html#method.len-1)
+        $string.len()
+    } as usize };
+
+    /*
+    // Slice of strings
+    ($buffer:expr, $index:expr, SS[$strings:expr]) => {{
+
+        let mut bytes_size:usize = 0;
+
+        // Take size of each string
+        for elem in $strings.iter() {
+            bytes_size += elem.len();
+        }
+
+        // Return size of strings
+        bytes_size
+
+    } as usize };
+    */
+
+    // Tampon trait implementor
+    ($buffer:expr, $index:expr, T($tampon:expr)) => {{
+
+        // Call Tampon::to_buffer with slice of buffer which return the size used.
+        $tampon.to_buffer($buffer[$index..$buffer.len()])
+
+
+    } as usize };
+
+    /*
+    // Slice of Tampon trait implementator
+    ($buffer:expr, $index:expr, TS[$tampons:expr]) => {{
+
+        // To keep the count of bytes used
+        let mut bytes_size = 0;
+
+        // Call tampon to_buffer impl for each element and increment the size used.
+        for elem in $tampons.iter() {
+            bytes_size += elem.to_buffer(&mut $buffer[$index + bytes_size..$buffer.len()]);
+        }
+
+        // Return bytes count
+        bytes_size
+
+    } as usize };
+    */
+
+
+
+    // Slice of numeric types
+    ($buffer:expr, $index:expr, $token:tt[$slice:expr]) => {{
+
+        // To accumulate bytes
+        let mut bytes_size:usize = 0;
+
+        // Take copy and get bytes size of each element
+        for elem in $slice.iter() {
+            bytes_size += to_buffer!($buffer, $index + bytes_size,$token(*elem));
+        }
+
+        // Return bytes count
+        bytes_size
+
+    } as usize };
+
+    /*
+    // Variadic pattern match
+    ($buffer:expr, $index:expr, $token:tt $expr:expr, $($ext_token:tt $ext_expr:expr), *) => {{
+
+        // Get non-variadic size
+        let bytes_size = to_buffer!($buffer, $index, $token ($expr));
+
+        // Return size used with variadic call
+        bytes_size + to_buffer!($buffer, bytes_size + $index, $($ext_token $ext_expr ), *)
+
+    } as usize };
+    */
+
+    /********************
+    * VARIADIC PATTERNS *
+    ********************/
+    // Multiple elements in brackets []
+    ($buffer:expr, $index:expr, $token:tt($expr:expr, $($var_expr:expr), *))=> {{
+
+        // Get non-variadic size
+        let bytes_size = to_buffer!($buffer, $index, $token($expr));
+
+        // Return size used with variadic call
+        bytes_size + to_buffer!($buffer, bytes_size + $index, $token($($var_expr),*))
+
+    } as usize };
+
+    // Multiple element in brackets [] and multiple tokens
+    ($buffer:expr, $index:expr, $token:tt($($var_expr:expr), +), $($ext_token:tt($($etc_var_expr:expr), +)), *)=> {{
+
+        // Get token variadic size
+        let bytes_size = to_buffer!($buffer, $index, $token[$($var_expr),*]);
+
+        // Return size used with variadic tokens
+        bytes_size + to_buffer!($buffer, bytes_size + $index, $($ext_token[$($etc_var_expr),*]), *)
+
+    } as usize };
+
+
+
+
+
+
+
+    //////////////////////////////// OLD CODE BELOW
+
+
     /*
     // Non-variadic with only primitive
     ($buffer:expr, $index:expr, p ($primitive:expr, $type:ty)) => {{
@@ -161,3 +305,5 @@ macro_rules! to_buffer {
 
     */
 }
+
+
