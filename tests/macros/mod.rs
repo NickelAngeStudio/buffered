@@ -21,9 +21,13 @@
 * @todo
 */
 
-// bytes_size! macro tests
+// boolean_pack_size! macro tests
 #[cfg(test)]
 mod bytes_size_test;
+
+// boolean_pack! and boolean_unpack! macro tests
+//#[cfg(test)]
+//mod boolean_packer;
 
 // to_buffer! macro tests
 #[cfg(test)]

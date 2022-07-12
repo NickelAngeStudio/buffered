@@ -21,15 +21,21 @@
  * @todo
  */
 
-
-use tampon::{to_buffer, compare_buffers};
-
-use crate::{data::{DataNumerics, macro_test_validation, DataTampons, DataNumericsSlices, DataTamponsSlices}, implementation::TestStruct};
-
+/*
+use tampon::{to_buffer, compare_buffers, Tampon};
+use crate::{data::{DataNumerics, macro_test_validation, DataTampons, DataNumericsSlices, DataTamponsSlices, DataStrings, DataStringsSlices}};
 
 
+#[test]
+#[should_panic]
+// Test to_buffer without enough space
+fn to_buffer_not_enough_space(){
+    let n = DataNumerics::new();
+    let mut buffer:Vec<u8> = vec![0;10];
 
-// TODO:Test without enough space
+    let _ = to_buffer!(buffer, 0, N(n.n1, n.n2, n.n3, n.n4, n.n5, n.n6, n.n7, n.n8, n.n9, n.n10));
+}
+
 
 #[test]
 // Test to_buffer with 1 numeric type
@@ -37,7 +43,7 @@ fn to_buffer_1_numeric(){
     let n = DataNumerics::new();
     let size = n.get_size(1);
     let mut buffer:Vec<u8> = vec![0;size];
-    let expected:Vec<u8> = vec![255;1];
+    let expected = n.get_buffer(1);
 
     assert!(macro_test_validation(size,
         to_buffer!(buffer, 0, N(n.n1))
@@ -56,7 +62,7 @@ fn to_buffer_2_numeric(){
     let n = DataNumerics::new();
     let size = n.get_size(2);
     let mut buffer:Vec<u8> = vec![0;size];
-    let expected:Vec<u8> = vec![255;3];
+    let expected = n.get_buffer(2);
 
   
     assert!(macro_test_validation(size,
@@ -76,8 +82,7 @@ fn to_buffer_10_numeric(){
     let n = DataNumerics::new();
     let size = n.get_size(10);
     let mut buffer:Vec<u8> = vec![0;size];
-    let expected:Vec<u8> = vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 127, 255, 255, 255, 255, 255, 255, 239, 127, 127, 255, 127, 255, 255, 255, 127];
-
+    let expected = n.get_buffer(10);
   
     assert!(macro_test_validation(size,
         to_buffer!(buffer, 0, N(n.n1, n.n2, n.n3, n.n4, n.n5, n.n6, n.n7, n.n8, n.n9, n.n10))
@@ -102,10 +107,8 @@ fn to_buffer_1_numeric_slice(){
         to_buffer!(buffer, 0, N[ns.ns1])
     ));
 
-    println!("Buffer={:?}", buffer);
 }
 
-/*
 #[test]
 // Test to_buffer with 2 slice of numeric
 fn to_buffer_2_numeric_slice(){
@@ -115,269 +118,296 @@ fn to_buffer_2_numeric_slice(){
     let mut buffer:Vec<u8> = vec![0;size];
    
     assert!(macro_test_validation(size,
-        to_buffer!(buffer, 0, NS[ns.ns1, ns.ns2])
-    ));
-
-    println!("Buffer={:?}", buffer);
-}
-*/
-
-
-/*
-#[test]
-// Test to_buffer of 1 primitive
-fn to_buffer_1_primitive(){
-    let p = DataNumerics::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(1)];
-    
-    assert!(macro_test_validation(p.get_size(1),
-        to_buffer!(buffer, 0, p(p.n1, u8))
-    ));
-
-}
-
-#[test]
-// Test to_buffer of 2 primitive
-fn to_buffer_2_primitive(){
-    let p = DataNumerics::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(2)];
-
-    assert!(macro_test_validation(p.get_size(2),
-        to_buffer!(buffer, 0, p(p.n1, u8), p(p.n2, u16))
-    ));
-}
-
-#[test]
-// Test to_buffer of 10 primitive
-fn to_buffer_10_primitive(){
-
-    let p = DataNumerics::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(10)];
-
-    assert!(macro_test_validation(p.get_size(10),
-        to_buffer!(buffer, 0, p(p.n1, u8), p(p.n2, u16),p(p.n3, u32), p(p.n4, u64),p(p.n5, u128),
-            p(p.n6, f32), p(p.n7, f64),p(p.n8, bool), p(p.n9, char),p(p.n10, i8))
-    ));
-
-}
-
-#[test]
-// Test to_buffer of 1 slice of primitive
-fn to_buffer_1_primitive_slice(){
-
-    let ps = DataNumericsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ps.get_size(1)];
-
-    assert!(macro_test_validation(ps.get_size(1),
-        to_buffer!(buffer, 0, ps(ps.ns1, u8))
-    ));
-
-}
-
-#[test]
-// Test to_buffer of 2 slice of primitive
-fn to_buffer_2_primitive_slice(){
-
-    let ps = DataNumericsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ps.get_size(2)];
-
-    assert!(macro_test_validation(ps.get_size(2),
-        to_buffer!(buffer, 0, ps(ps.ns1, u8), ps(ps.ns2, u16))
-    ));
-
-}
-
-#[test]
-// Test to_buffer of 10 slice of primitive
-fn to_buffer_10_primitive_slice(){
-
-    let ps = DataNumericsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ps.get_size(10)];
-
-    assert!(macro_test_validation(ps.get_size(10),
-        to_buffer!(buffer, 0, ps(ps.ns1, u8), ps(ps.ns2, u16), ps(ps.ns3, u32), ps(ps.ns4, u64), ps(ps.ns5, u128),
-        ps(ps.ns6, f32), ps(ps.ns7, f64), ps(ps.ns8, bool), ps(ps.ns9, char), ps(ps.ns10, i8))
+        to_buffer!(buffer, 0, N[ns.ns1, ns.ns2])
     ));
 
 }
 
 
 #[test]
-// Test to_buffer of 1 implementor of Tampon trait
+// Test to_buffer with 10 slice of numeric
+fn to_buffer_10_numeric_slice(){
+
+    let ns = DataNumericsSlices::new();
+    let size = ns.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N[ns.ns1, ns.ns2, ns.ns3, ns.ns4, ns.ns5, ns.ns6, ns.ns7, ns.ns8, ns.ns9, ns.ns10])
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 1 string
+fn to_buffer_1_string(){
+    let s = DataStrings::new();
+    let size = s.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S(s.s1))
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 2 strings
+fn to_buffer_2_string(){
+    let s = DataStrings::new();
+    let size = s.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S(s.s1, s.s2))
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 10 strings
+fn to_buffer_10_string(){
+    let s = DataStrings::new();
+    let size = s.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S(s.s1, s.s2, s.s3, s.s4, s.s5, s.s6, s.s7, s.s8, s.s9, s.s10))
+    ));
+
+}
+
+
+#[test]
+// Test to_buffer with 1 string slice
+fn to_buffer_1_string_slice(){
+    let ss = DataStringsSlices::new();
+    let size = ss.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S[ss.ss1])
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 2 strings slices
+fn to_buffer_2_string_slice(){
+    let ss = DataStringsSlices::new();
+    let size = ss.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S[ss.ss1, ss.ss2])
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 10 strings slices
+fn to_buffer_10_string_slice(){
+    let ss = DataStringsSlices::new();
+    let size = ss.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
+
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, S[ss.ss1, ss.ss2, ss.ss3, ss.ss4, ss.ss5, ss.ss6, ss.ss7, ss.ss8, ss.ss9, ss.ss10])
+    ));
+
+}
+
+#[test]
+// Test to_buffer with 1 implementor of Tampon trait
 fn to_buffer_1_tampon(){
 
     let t = DataTampons::new();
-    let mut buffer: Vec<u8> = vec![0;t.get_size(1)];
+    let size = t.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(t.get_size(1),
-        to_buffer!(buffer, 0, t(t.t1, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T(t.t1))
     ));
-
 
 }
 
 #[test]
-// Test to_buffer of 2 implementor of Tampon trait
+// Test to_buffer with 2 implementor of Tampon trait
 fn to_buffer_2_tampon(){
 
     let t = DataTampons::new();
-    let mut buffer: Vec<u8> = vec![0;t.get_size(2)];
+    let size = t.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(t.get_size(2),
-        to_buffer!(buffer, 0, t(t.t1, TestStruct), t(t.t2, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T(t.t1, t.t2))
     ));
-
 
 }
 
 
 #[test]
-// Test to_buffer of 10 implementor of Tampon trait
+// Test to_buffer with 10 implementor of Tampon trait
 fn to_buffer_10_tampon(){
 
     let t = DataTampons::new();
-    let mut buffer: Vec<u8> = vec![0;t.get_size(10)];
+    let size = t.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(t.get_size(10),
-        to_buffer!(buffer, 0, t(t.t1, TestStruct), t(t.t2, TestStruct),t(t.t3, TestStruct), t(t.t4, TestStruct),t(t.t5, TestStruct),
-        t(t.t6, TestStruct), t(t.t7, TestStruct),t(t.t8, TestStruct), t(t.t9, TestStruct),t(t.t10, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T(t.t1, t.t2, t.t3, t.t4, t.t5, t.t6, t.t7, t.t8, t.t9, t.t10))
     ));
-
-
 
 }
 
 
 #[test]
-// Test to_buffer of 1 slice of implementor of Tampon trait
+// Test to_buffer with 1 slice of implementor of Tampon trait
 fn to_buffer_1_tampon_slice(){
 
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ts.get_size(1)];
+    let size = ts.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(ts.get_size(1),
-        to_buffer!(buffer, 0, ts(ts.ts1, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T[ts.ts1])
     ));
 
 }
 
 #[test]
-// Test to_buffer of 2 slice of implementor of Tampon trait
+// Test to_buffer with 2 slice of implementor of Tampon trait
 fn to_buffer_2_tampon_slice(){
 
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ts.get_size(2)];
+    let size = ts.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(ts.get_size(2),
-        to_buffer!(buffer, 0, ts(ts.ts1, TestStruct), ts(ts.ts2, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T[ts.ts1, ts.ts2])
     ));
+
 
 }
 
 #[test]
-// Test to_buffer of 10 slice of implementor of Tampon trait
+// Test to_buffer with 10 slice of implementor of Tampon trait
 fn to_buffer_10_tampon_slice(){
     
 
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ts.get_size(10)];
+    let size = ts.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(ts.get_size(10),
-        to_buffer!(buffer, 0, ts(ts.ts1, TestStruct), ts(ts.ts2, TestStruct),ts(ts.ts3, TestStruct), ts(ts.ts4, TestStruct),ts(ts.ts5, TestStruct),
-        ts(ts.ts6, TestStruct), ts(ts.ts7, TestStruct),ts(ts.ts8, TestStruct), ts(ts.ts9, TestStruct),ts(ts.ts10, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, T[ts.ts1, ts.ts2, ts.ts3, ts.ts4, ts.ts5, ts.ts6, ts.ts7, ts.ts8, ts.ts9, ts.ts10])
     ));
+
 
 }
 
 
 #[test]
-// Test to_buffer of 1 p, 1t
-fn to_buffer_1p_1t(){
+// Test to_buffer with 1n, 1s, 1t
+fn to_buffer_1n_1s_1t(){
 
-    let p = DataNumerics::new();
+    let n = DataNumerics::new();
+    let s = DataStrings::new();
     let t = DataTampons::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(1) + t.get_size(1)];
+    let size = n.get_size(1) + s.get_size(1) + t.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(p.get_size(1) + t.get_size(1),
-        to_buffer!(buffer, 0, p(p.n1, u8), t(t.t1, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N(n.n1), S(s.s1), T(t.t1))
     ));
 
 }
 
 #[test]
-// Test to_buffer of 1ps, 1ts
-fn to_buffer_1ps_1ts(){
-
-
-    let ps = DataNumericsSlices::new();
+// Test to_buffer with 1ns, 1ss, 1ts
+fn to_buffer_1ns_1ss_1ts(){
+    let ns = DataNumericsSlices::new();
+    let ss = DataStringsSlices::new();
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;ps.get_size(1) + ts.get_size(1)];
+    let size = ns.get_size(1) + ss.get_size(1) + ts.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(ps.get_size(1) + ts.get_size(1),
-        to_buffer!(buffer, 0, ps(ps.ns1, u8), ts(ts.ts1, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N[ns.ns1], S[ss.ss1], T[ts.ts1])
     ));
-
-
-
 }
 
 #[test]
-// Test to_buffer of 1p, 1t, 1ps, 1ts
-fn to_buffer_1p_1t_1ps_1ts(){
+// Test to_buffer with 1n, 1s, 1t, 1ns, 1ss, 1ts
+fn to_buffer_1n_1s_1t_1ns_1ss_1ts(){
 
-    let p = DataNumerics::new();
+    let n = DataNumerics::new();
+    let s = DataStrings::new();
     let t = DataTampons::new();
-    let ps = DataNumericsSlices::new();
+    let ns = DataNumericsSlices::new();
+    let ss =DataStringsSlices::new();
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(1) + t.get_size(1)+ ps.get_size(1) + ts.get_size(1)];
+    let size = n.get_size(1) + s.get_size(1) + t.get_size(1)+ ns.get_size(1) + ss.get_size(1) + ts.get_size(1);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(p.get_size(1) + t.get_size(1)+ ps.get_size(1) + ts.get_size(1),
-        to_buffer!(buffer, 0, p(p.n1, u8), t(t.t1, TestStruct),ps(ps.ns1, u8), ts(ts.ts1, TestStruct))
+    assert!(macro_test_validation(size,
+        to_buffer!(buffer, 0, N(n.n1), S(s.s1), T(t.t1), N[ns.ns1], S[ss.ss1], T[ts.ts1])
     ));
-
 }
 
 #[test]
-// Test to_buffer of 2p, 2t, 2ps, 2ts
-fn to_buffer_2p_2t_2ps_2ts(){
+// Test to_buffer with 2n, 2s, 2t, 2ns, 2ss, 2ts
+fn to_buffer_2n_2s_2t_2ns_2ss_2ts(){
 
-    let p = DataNumerics::new();
+    let n = DataNumerics::new();
+    let s = DataStrings::new();
     let t = DataTampons::new();
-    let ps = DataNumericsSlices::new();
+    let ns = DataNumericsSlices::new();
+    let ss =DataStringsSlices::new();
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(2) + t.get_size(2)+ ps.get_size(2) + ts.get_size(2)];
+    let size = n.get_size(2) + s.get_size(2) + t.get_size(2)+ ns.get_size(2) + ss.get_size(2) + ts.get_size(2);
+    let mut buffer:Vec<u8> = vec![0;size];
 
-    assert!(macro_test_validation(p.get_size(2) + t.get_size(2)+ ps.get_size(2) + ts.get_size(2),
+    assert!(macro_test_validation(size,
         to_buffer!(buffer, 0, 
-            p(p.n1, u8), p(p.n2, u16),
-            ps(ps.ns1, u8), ps(ps.ns2, u16),
-            t(t.t1, TestStruct), t(t.t2, TestStruct),
-            ts(ts.ts1, TestStruct), ts(ts.ts2, TestStruct)
+            N(n.n1, n.n2),
+            S(s.s1, s.s2),
+            N[ns.ns1, ns.ns2],
+            T(t.t1, t.t2),
+            S[ss.ss1, ss.ss2],
+            T[ts.ts1, ts.ts2]
         )
     ));
-
 }
 
 #[test]
-// Test to_buffer of 10p, 10t, 10ps, 10ts
-fn to_buffer_10p_10t_10ps_10ts(){
+// Test to_buffer with 10n, 10s, 10t, 10ns, 10ss, 10ts
+fn to_buffer_10n_10s_10t_10ns_10ss_10ts(){
 
-    let p = DataNumerics::new();
+    let n = DataNumerics::new();
+    let s = DataStrings::new();
     let t = DataTampons::new();
-    let ps = DataNumericsSlices::new();
+    let ns = DataNumericsSlices::new();
+    let ss =DataStringsSlices::new();
     let ts = DataTamponsSlices::new();
-    let mut buffer: Vec<u8> = vec![0;p.get_size(10) + t.get_size(10)+ ps.get_size(10) + ts.get_size(10)];
-
-    assert!(macro_test_validation(p.get_size(10) + t.get_size(10)+ ps.get_size(10) + ts.get_size(10),
+    let size = n.get_size(10) + s.get_size(10) + t.get_size(10)+ ns.get_size(10) + ss.get_size(10) + ts.get_size(10);
+    let mut buffer:Vec<u8> = vec![0;size];
+    
+    assert!(macro_test_validation(size,
         to_buffer!(buffer, 0, 
-            p(p.n1, u8), p(p.n2, u16),p(p.n3, u32), p(p.n4, u64),p(p.n5, u128),
-            t(t.t1, TestStruct), t(t.t2, TestStruct),t(t.t3, TestStruct), t(t.t4, TestStruct),t(t.t5, TestStruct),
-            ps(ps.ns6, f32), ps(ps.ns7, f64), ps(ps.ns8, bool), ps(ps.ns9, char), ps(ps.ns10, i8),
-            ts(ts.ts1, TestStruct), ts(ts.ts2, TestStruct),ts(ts.ts3, TestStruct), ts(ts.ts4, TestStruct),ts(ts.ts5, TestStruct),
-            p(p.n6, f32), p(p.n7, f64),p(p.n8, bool), p(p.n9, char),p(p.n10, i8),
-            t(t.t6, TestStruct), t(t.t7, TestStruct),t(t.t8, TestStruct), t(t.t9, TestStruct),t(t.t10, TestStruct),
-            ps(ps.ns1, u8), ps(ps.ns2, u16), ps(ps.ns3, u32), ps(ps.ns4, u64), ps(ps.ns5, u128),
-            ts(ts.ts6, TestStruct), ts(ts.ts7, TestStruct),ts(ts.ts8, TestStruct), ts(ts.ts9, TestStruct),ts(ts.ts10, TestStruct)
+            N(n.n1, n.n2, n.n3, n.n4, n.n5),
+            T(t.t1, t.t2, t.t3, t.t4, t.t5),
+            S(s.s1, s.s2, s.s3, s.s4, s.s5),
+            N[ns.ns6, ns.ns7, ns.ns8, ns.ns9, ns.ns10],
+            S[ss.ss10, ss.ss9, ss.ss8, ss.ss7, ss.ss6],
+            T[ts.ts1, ts.ts2, ts.ts3, ts.ts4, ts.ts5],
+
+            N(n.n6, n.n7, n.n8, n.n9, n.n10),
+            T(t.t6, t.t7, t.t8, t.t9, t.t10),
+            S(s.s10, s.s9, s.s8, s.s7, s.s6),
+            N[ns.ns1, ns.ns2, ns.ns3, ns.ns4, ns.ns5],
+            S[ss.ss5, ss.ss4, ss.ss3, ss.ss2, ss.ss1],
+            T[ts.ts6, ts.ts7, ts.ts8, ts.ts9, ts.ts10]
         )
     ));
 }
