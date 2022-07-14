@@ -32,7 +32,8 @@ pub const SLICE_SIZE_IN_BYTES:usize = 4;
 /// Variadic macro used to get the size of bytes of [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
 /// Also work with [`slice`] by using brackets `[]` instead of parenthesis `()`.
 ///
-/// # Argument(s)
+/// # Usage
+/// `let size = bytes_size!([0..n](v1, ..., vn):type, [0..n][s1, ..., sn]:type);`
 /// * One-to-many `(v1, ..., vn):type` where elements in `parenthesis()` are the variables to be sized.
 /// * One-to-many `[s1, ..., sn]:type` where elements in `brackets[]` are the slices to be sized.
 /// 
@@ -84,6 +85,7 @@ macro_rules! bytes_size {
         bytes_size!($($tail)*) + $crate::bytes_size_var!($expr => $type) $(+$crate::bytes_size_var!($extra => $type))*
     } as usize };
 
+    // Without tail
     ([$expr:expr $(,$extra:expr)*]:$type:ident) => {{
         $crate::bytes_size_var!($expr => [$type]) $(+$crate::bytes_size_var!($extra => [$type]))*
     } as usize };
@@ -236,122 +238,3 @@ macro_rules! bytes_size_var {
     } as usize };
 
 }
-
-/*
-macro_rules! bytes_size {
-    // Macro built with Incremental TT munchers pattern : https://danielkeep.github.io/tlborm/book/pat-incremental-tt-munchers.html
-
-    // Return 0 on empty
-    () => {{ 0 } as usize };
-
-    *********
-    * BOOLEAN *
-    ***********
-    // Without tail and separator
-    (B($expr:expr $(,$extra:expr)*)) => {{
-        1 $(+bytes_size!(B($extra)))*
-    } as usize };
-    // With tail and separator
-    (B($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-        1 + bytes_size!($($tail)*) $(+bytes_size!(B($extra)))*
-    } as usize };
-
-    // Slice without tail and separator
-    (B[$expr:expr $(,$extra:expr)*]) => {{
-        $crate::SLICE_SIZE_IN_BYTES + 
-        if $expr.len() > 0 { $expr.len() } else { 0 } $(+bytes_size!(B[$extra]))*
-    } as usize };
-    // Slice with tail and separator
-    (B[$expr:expr $(,$extra:expr)*], $($tail:tt)*) => {{
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size!($($tail)*) + 
-        if $expr.len() > 0 { $expr.len() } else { 0 } $(+bytes_size!(B[$extra]))*
-    } as usize };
-
-    **************
-    * NUMERIC TYPES *
-    ****************
-    // Without tail and separator
-    (N($expr:expr $(,$extra:expr)*)) => {{
-        core::mem::size_of_val(&$expr) $(+bytes_size!( N($extra)))*
-    } as usize };
-    // With tail and separator
-    (N($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-        core::mem::size_of_val(&$expr) + bytes_size!( $($tail)* )
-        $(+bytes_size!( N($extra)))*
-    } as usize };
-
-    // Slice without tail and separator
-    (N[$expr:expr $(,$extra:expr)*]) => {{
-        $crate::SLICE_SIZE_IN_BYTES + 
-        if $expr.len() > 0 { core::mem::size_of_val(&$expr[0]) * $expr.len() } else { 0 } 
-        $(+bytes_size!( N[$extra]))*
-    } as usize };
-    // Slice with tail and separator
-    (N[$expr:expr $(,$extra:expr)*], $($tail:tt)*) => {{
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size!( $($tail)*) +
-        if $expr.len() > 0 { core::mem::size_of_val(&$expr[0]) * $expr.len() } else { 0 } 
-        $(+bytes_size!( N[$extra]))*
-    } as usize };
-
-    ********
-    * STRING * 
-    *********
-    // Without tail and separator
-    (S($expr:expr $(,$extra:expr)*)) => {{
-        // String::len() gives size of string in bytes (https://doc.rust-lang.org/std/string/struct.String.html#method.len-1)
-        $expr.len() $(+bytes_size!( S($extra)))*
-    } as usize };
-    // With tail and separator
-    (S($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-        // String::len() gives size of string in bytes (https://doc.rust-lang.org/std/string/struct.String.html#method.len-1)
-        $expr.len() + bytes_size!( $($tail)*) $(+bytes_size!( S($extra)))*
-    } as usize };
-
-    // Slice without tail and separator
-    (S[$expr:expr $(,$extra:expr)*]) => {{
-        let mut bytes_size = 0;
-        for elem in $expr.iter() {
-            bytes_size += elem.len();
-        }
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size $(+bytes_size!( S[$extra]))*
-    } as usize };
-    // Slice with tail and separator
-    (S[$expr:expr $(,$extra:expr)*], $($tail:tt)*) => {{
-        let mut bytes_size = 0;
-        for elem in $expr.iter() {
-            bytes_size += elem.len()
-        }
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size + bytes_size!( $($tail)* ) $(+bytes_size!( S[$extra]))*
-    } as usize };
-
-    **************
-    * TAMPON TRAIT *
-    ***************
-    // Without tail and separator
-    (T($expr:expr $(,$extra:expr)*)) => {{
-        $expr.bytes_size() $(+bytes_size!(T($extra)))*
-    } as usize };
-    // With tail and separator
-    (T($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-        $expr.bytes_size() + bytes_size!($($tail)*) $(+bytes_size!(T($extra)))*
-    } as usize };
-
-    // Slice without tail and separator
-    (T[$expr:expr $(,$extra:expr)*]) => {{
-        let mut bytes_size = 0;
-        for elem in $expr.iter() {
-            bytes_size += elem.bytes_size();
-        }
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size $(+bytes_size!(T[$extra]))*
-    } as usize };
-    // Slice with tail and separator
-    (T[$expr:expr $(,$extra:expr)*], $($tail:tt)*) => {{
-        let mut bytes_size = 0;
-        for elem in $expr.iter() {
-            bytes_size += elem.bytes_size();
-        }
-        $crate::SLICE_SIZE_IN_BYTES + bytes_size + bytes_size!( $($tail)* ) $(+bytes_size!(T[$extra]))*
-    } as usize };
-
-}
-*/

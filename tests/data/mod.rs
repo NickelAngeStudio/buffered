@@ -22,8 +22,6 @@
  * @todo
  */
 
-use tampon::Tampon;
-
 use crate::implementation::{ TamponS1, TamponS2 } ;
 
  // Size of slices
@@ -60,11 +58,17 @@ macro_rules! boolean_var {
 #[macro_export]
 macro_rules! boolean_slice {
     ($size:expr, $index:expr, $name:ident) => {
-        let $name:Vec<bool> = vec![$index % 2 == 0;   ($index + 1) * 100];
+        let mut $name:Vec<bool> = Vec::new();
+        for i in 0..($index + 1) * 100{
+            $name.push(i % 2 == 0);
+        }
         $size += tampon::SLICE_SIZE_IN_BYTES + $name.len();
     };
     ($size:expr, $index:expr, $name:ident, $($tail:tt)*) => {
-        let $name:Vec<bool> = vec![$index % 2 == 0;   ($index + 1) * 100];
+        let mut $name:Vec<bool> = Vec::new();
+        for i in 0..($index + 1) * 100{
+            $name.push(i % 2 == 0);
+        }
         $size += tampon::SLICE_SIZE_IN_BYTES + $name.len();
         boolean_slice!($size, $index + 1, $($tail)*);
     };
@@ -168,7 +172,7 @@ macro_rules! tampon_var {
 macro_rules! tampon_slice {
     ($size:expr, $index:expr, $name:ident:TamponS1) => {
         let mut $name:Vec<TamponS1> = Vec::new();
-        for _ in 0..$size % 255 {
+        for _ in 0..(($size + 1) * 2) % 255 {
             let t = TamponS1::new(u8::MAX, $size as u32, $size as f64, $size % 255);
             $size += t.bytes_size();
             $name.push(t);
@@ -177,7 +181,7 @@ macro_rules! tampon_slice {
     };
     ($size:expr, $index:expr, $name:ident:TamponS1, $($tail:tt)*) => {
         let mut $name:Vec<TamponS1> = Vec::new();
-        for _ in 0..$size % 255 {
+        for _ in 0..(($size + 1) * 2) % 255 {
             let t = TamponS1::new(u8::MAX, $size as u32, $size as f64, $size % 255);
             $size += t.bytes_size();
             $name.push(t);
@@ -188,7 +192,7 @@ macro_rules! tampon_slice {
 
     ($size:expr, $index:expr, $name:ident:TamponS2) => {
         let mut $name:Vec<TamponS2> = Vec::new();
-        for _ in 0..$size % 255 {
+        for _ in 0..(($size + 1) * 2) % 255 {
             let t = TamponS2::new(u8::MAX, $size as i128);
             $size += t.bytes_size();
             $name.push(t);
@@ -197,7 +201,7 @@ macro_rules! tampon_slice {
     };
     ($size:expr, $index:expr, $name:ident:TamponS2, $($tail:tt)*) => {
         let mut $name:Vec<TamponS2> = Vec::new();
-        for _ in 0..$size % 255 {
+        for _ in 0..(($size + 1) * 2) % 255 {
             let t = TamponS2::new(u8::MAX, $size as i128);
             $size += t.bytes_size();
             $name.push(t);
@@ -219,6 +223,19 @@ pub fn macro_test_validation(expected:usize, result:usize) -> bool {
 
     expected == result
 }
+
+// To see if 2 vectors matches
+// https://stackoverflow.com/questions/29504514/whats-the-best-way-to-compare-2-vectors-or-strings-element-by-element
+pub fn do_vecs_match<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> bool {
+    let matching = a.iter().zip(b.iter()).filter(|&(a, b)| a == b).count();
+    matching == a.len() && matching == b.len()
+}
+
+pub fn do_vecs_eq_match<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> bool {
+    let matching = a.iter().zip(b.iter()).filter(|&(a, b)| a.eq(b)).count();
+    matching == a.len() && matching == b.len()
+}
+
 
 pub fn vec_of_tampon1(size:usize) -> Vec<TamponS1>{
 

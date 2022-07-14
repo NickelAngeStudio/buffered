@@ -25,18 +25,10 @@
 #[cfg(test)]
 mod bytes_size_test;
 
-// boolean_pack! and boolean_unpack! macro tests
-//#[cfg(test)]
-//mod boolean_packer;
-
-// to_buffer! macro tests
+// to_buffer!, from_buffer! macros tests
 #[cfg(test)]
-mod to_buffer_test;
+mod to_from_buffer_test;
 
-// from_buffer! macro tests
-#[cfg(test)]
-mod from_buffer_test;
-
-// buffer! mcacro tests
+// buffer! integration macro tests
 #[cfg(test)]
 mod buffer_test;

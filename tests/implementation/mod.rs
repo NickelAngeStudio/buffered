@@ -23,7 +23,10 @@
 
 use std::vec;
 
+use tampon::from_buffer;
 pub use tampon::{Tampon, bytes_size, to_buffer};
+
+use crate::data::{do_vecs_match, do_vecs_eq_match};
 
 // Struct used to test Tampon traits in macros
  pub struct TamponS1 {
@@ -57,18 +60,31 @@ pub use tampon::{Tampon, bytes_size, to_buffer};
  }
 
 
-impl Tampon for TamponS1 {
+impl Tampon<TamponS1> for TamponS1 {
     fn bytes_size(&self) -> usize {
-        bytes_size!((self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):InnerStruct, [self.v1]:u8, [self.v2]:f64, [self.v3]:InnerStruct)
+        bytes_size!((self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):TamponS2, [self.v1]:u8, [self.v2]:f64, [self.v3]:TamponS2)
     }
 
     fn to_buffer(&self, buffer : &mut [u8]) -> usize {
-        to_buffer!(buffer, 0, N(self._f1, self._f2, self._f3), T(self.f4), N[self.v1, self.v2], T[self.v3])
+        to_buffer!(buffer, to_size, (self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):TamponS2, [&self.v1]:u8, [&self.v2]:f64, [&self.v3]:TamponS2);
+        to_size
     }
 
-    fn from_buffer(&mut self, buffer : &[u8]) -> usize {
-        //TODO
-        0
+    fn from_buffer(buffer : &[u8]) -> (TamponS1, usize) {
+        
+        from_buffer!(buffer, from_size, (_f1):u8, (_f2):u32, (_f3):f64, (f4):TamponS2, [v1]:u8, [v2]:f64, [v3]:TamponS2);
+
+        (TamponS1 {
+            _f1,_f2,_f3,f4,v1,v2,v3
+        }, from_size)
+
+    }
+}
+
+impl PartialEq for TamponS1 {
+    fn eq(&self, other: &Self) -> bool {
+        self._f1 == other._f1 && self._f2 == other._f2 && self._f3 == other._f3 && self.f4.eq(&other.f4)
+        && do_vecs_match(&self.v1,&other.v1) && do_vecs_match(&self.v2,&other.v2) && do_vecs_eq_match(&self.v3,&other.v3)
     }
 }
 
@@ -87,17 +103,27 @@ impl Tampon for TamponS1 {
     }
  }
 
- impl Tampon for TamponS2 {
+ impl Tampon<TamponS2> for TamponS2 {
     fn bytes_size(&self) -> usize {
         bytes_size!((self._f1):u8, (self._f2):i128)
     }
 
     fn to_buffer(&self, buffer : &mut [u8]) -> usize {
-        to_buffer!(buffer, 0, N(self._f1, self._f2))
+        to_buffer!(buffer, to_size, (self._f1):u8, (self._f2):i128);
+        to_size
     }
 
-    fn from_buffer(&mut self, buffer : &[u8]) -> usize {
-        //TODO
-        0
+    fn from_buffer(buffer : &[u8]) -> (TamponS2, usize) {
+        from_buffer!(buffer, from_size, (_f1):u8, (_f2):i128);
+
+        (TamponS2 {
+            _f1,_f2
+        }, from_size)
+    }    
+}
+
+impl PartialEq for TamponS2 {
+    fn eq(&self, other: &Self) -> bool {
+        self._f1 == other._f1 && self._f2 == other._f2
     }
 }

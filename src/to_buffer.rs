@@ -21,24 +21,18 @@
  * @todo
  */
 
-/// ##### Variadic macro used to fill a buffer with multiple [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html). 
+/// ##### Variadic macro used to fill a buffer with multiple [`variables`](macro.to_buffer.html#compatible-variabless) and implementors of trait [`Tampon`](trait.Tampon.html). 
 /// 
 /// # Description
-/// Variadic macro used to fill a buffer with multiple [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html). 
-/// 
-/// Also work with [`slice`] of those types by using brackets `[]` instead of parenthesis `()` after the token type.
+/// Variadic macro used to fill a buffer with multiple [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
+/// Also work with [`slice`] by using brackets `[]` instead of parenthesis `()`.
 /// 
 /// # Usage
-/// `to_buffer!(buffer, index, [0..n]token(v1, ..., vn), [0..n]token[s1, ..., sn])`
+/// `let size = to_buffer!(buffer, index, [0..n](v1, ..., vn):type, [0..n][s1, ..., sn]:type);`
 /// * `buffer` - Mutable reference to [`slice`] of [`u8`] to copy bytes into.
 /// * `index` - Index of the buffer to start copy into (use 0 to start at beginning).
-/// * One-to-many `token(v1, ..., vn)` where elements in `parenthesis()` are the variables to be copied into buffer.
-/// * One-to-many `token[s1, ..., sn]` where elements in `brackets[]` are the slices to be copied into buffer.
-/// 
-/// `token` type :
-/// * `N` - Copy bytes of [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html).
-/// * `S` - Copy bytes of [`String`].
-/// * `T` - Copy bytes of implementors of [`Tampon`](trait.Tampon.html) trait.
+/// * One-to-many `(v1, ..., vn):type` where elements in `parenthesis()` are the variables to be copied into buffer.
+/// * One-to-many `[s1, ..., sn]:type` where elements in `brackets[]` are the slices to be copied into buffer.
 /// 
 /// # Return
 /// Size in bytes of all arguments copied as [`usize`].
@@ -90,204 +84,294 @@
 /// let copy_size = to_buffer!(buffer, 0, N(a,b,c), S(d), N[e,f]);
 /// ```
 /// 
-/// # Note(s)
-/// * Works only with [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
+/// # Compatible variables(s)
+/// * [`bool`]
+/// * All [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) except [`usize`] and [`isize`]
+/// * [`String`] 
+/// * Implementors of trait [`Tampon`](trait.Tampon.html)
+/// * [`slice`] of the above types
+/// 
+/// # Endianness
 /// * [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) bytes are written as [`little endian`](https://en.wikipedia.org/wiki/Endianness).
 /// 
 /// # Panic(s)
 /// * Will panic! if `buffer` length is smaller than all sources length combined.
 #[macro_export]
 macro_rules! to_buffer {
+    
+    // Expression without tail without bytes_read
+    ($buffer:expr,($expr:expr $(,$extra:expr)*):$type:ident) => { {
+        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type);
+    }};
+
+    // Expression with tail without bytes_read
+    ($buffer:expr, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {{
+        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
+    }};
+
+    // Expression without tail with bytes_written
+    ($buffer:expr, $bytes_written:ident, ($expr:expr $(,$extra:expr)*):$type:ident) => {
+        // Dispatch to parser and get bytes_written
+        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type);
+    };
+
+    // Expression with tail with bytes_written
+    ($buffer:expr, $bytes_written:ident, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {
+        // Dispatch to parser and get bytes_written
+        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
+    };
+
+
+    // Slice without tail without bytes_read
+    ($buffer:expr, [$expr:expr $(,$extra:expr)*]:$type:ident) => { {
+        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
+    }};
+
+    // Slice with tail without bytes_read
+    ($buffer:expr, [$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {{
+        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
+    }};
+
+    // Slice without tail with bytes_written
+    ($buffer:expr, $bytes_written:ident, [$expr:expr $(,$extra:expr)*]:$type:ident) => {
+        // Dispatch to parser and get bytes_written
+        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
+    };
+
+    // Slice with tail with bytes_written
+    ($buffer:expr, $bytes_written:ident, [$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {
+        // Dispatch to parser and get bytes_written
+        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
+    };
+
+
+}
+
+/// Hidden extension of the to_buffer! macro. Not meant to be used directly (although it will still work).
+#[doc(hidden)]
+#[macro_export]
+macro_rules! to_buffer_parser {
     // Macro built with Incremental TT munchers pattern : https://danielkeep.github.io/tlborm/book/pat-incremental-tt-munchers.html
 
-    
-    // Return 0 on empty
-    () => {{ 0 } as usize };
+    // Expression without tail
+    ($buffer:expr, $index:expr, ($expr:expr $(,$extra:expr)*):$type:ident) => {{
+        let buffer_size = $buffer.len();
+        // Init bytes_copied with the expression
+        let mut bytes_copied = $crate::to_buffer_retriever!($buffer[$index..buffer_size], $expr => $type);
+        // Write extra to buffer and accumulate size
+        $(bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
 
-    ($buffer:expr, $index:expr) => {{ 0 } as usize };
+        // Return bytes_copied
+        bytes_copied
+    } as usize };
 
-    /****************
-    * NUMERIC TYPES *
-    ****************/
-    // Without tail and separator
-    ($buffer:expr, $index:expr, N($expr:expr $(,$extra:expr)*)) => {{
+    // Expression with tail
+    ($buffer:expr, $index:expr, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {{
+        let buffer_size = $buffer.len();
+        // Init bytes_copied with the expression
+        let mut bytes_copied = $crate::to_buffer_retriever!($buffer[$index..buffer_size], $expr => $type);
 
-        // Bytes size used
-        let mut bytes_size:usize = 0;
+        // Write extra to buffer and accumulate bytes_copied
+        $(bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
 
-        // Get expression in slice of little endian bytes
-        let src = $expr.to_le_bytes();
+        // Write and accumulate tail TT
+        bytes_copied += $crate::to_buffer_parser!($buffer, $index + bytes_copied, $($tail)*);
 
-        // Copy to buffer via copy from slice
-        $buffer[$index..($index + src.len())].copy_from_slice(&src);
+        // Return bytes_copied
+        bytes_copied
+    } as usize };
 
-        // Increment bytes_size
-        bytes_size += src.len();
-       
-        // Loop extra arguments of N()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, N($extra)); )*
+    // Slice without tail
+    ($buffer:expr, $index:expr, [$expr:expr $(,$extra:expr)*]:$type:ident) => {{
+        let buffer_size = $buffer.len();
+        let mut bytes_copied = 0;
 
-        // Return bytes_size
-        bytes_size
+        // Get value from buffer into array
+        bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
+        // Get value from buffer into array for extra
+        $( bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
+
+        // Return bytes copied
+        bytes_copied
 
     } as usize };
 
-    // With tail and separator
-    ($buffer:expr, $index:expr, N($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
+    // Slice with tail
+    ($buffer:expr, $index:expr, [$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {{
+        let buffer_size = $buffer.len();
+        let mut bytes_copied = 0;
 
-        // Bytes size used
-        let mut bytes_size:usize = 0;
+        // Get value from buffer into array
+        bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
 
-        // Get expression in slice of little endian bytes
-        let src = $expr.to_le_bytes();
+        // Get value from buffer into array for extra
+        $( bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
+        // Parse tail
+        bytes_copied += $crate::to_buffer_parser!($buffer, $index + bytes_copied, $($tail)*);
 
-        // Copy to buffer via copy from slice
-        $buffer[$index..($index + src.len())].copy_from_slice(&src);
-
-        // Increment bytes_size
-        bytes_size += src.len();
-
-        // Loop extra arguments of N()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, N($extra)); )*
-
-        // Expand tail arguments
-        bytes_size += to_buffer!($buffer, $index + bytes_size, $($tail)*);
-
-        // Return bytes_size
-        bytes_size
+        // Return bytes copied
+        bytes_copied
 
     } as usize };
 
+}
+
+
+/// Hidden extension of the to_buffer! macro. Parse tokens. Not meant to be used directly (although it will still work).
+#[doc(hidden)]
+#[macro_export]
+macro_rules! to_buffer_retriever {
+
+    // Slice affectator
+    ($buffer:expr, $expr:expr => [$type:ident]) => {{
+        let buffer_size = $buffer.len();
+
+        // Write size of slice
+        let bytes_len = ($expr.len() as u32).to_le_bytes();
+        $buffer[0..bytes_len.len()].copy_from_slice(&bytes_len);
+
+        // Init bytes_copied at bytes_len.len() since we will loop slice
+        let mut bytes_copied = bytes_len.len();
+
+        // Loop and accumulate and element of slice
+        for elem in $expr.iter() {
+            bytes_copied += $crate::to_buffer_retriever!($buffer[bytes_copied..buffer_size], *elem => $type);
+        } 
+
+        // Return bytes_copied
+        bytes_copied
+
+    } as usize} ;
+
+
+    /**********
+    * BOOLEAN *
+    **********/
+    ($buffer:expr, $expr:expr => bool) => {{ 
+        // Translate bytes into u8
+        if($expr) {
+            $crate::to_buffer_retriever!($buffer, 1 => u8)
+        } else {
+            $crate::to_buffer_retriever!($buffer, 0 => u8)
+        }
+        
+    } as usize };
+
+
+    /***********
+    * NUMERICS * 
+    ***********/
+    ($buffer:expr, $expr:expr => u8) => {{ 
+        // Transform the expression into bytes
+        let bytes = <u8>::to_le_bytes($expr);
+
+        // Copy to buffer via copy from slice
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+
+        // Return size used
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => u16) => {{ 
+        let bytes = <u16>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => u32) => {{ 
+        let bytes = <u32>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => u64) => {{ 
+        let bytes = <u64>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => u128) => {{ 
+        let bytes = <u128>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => f32) => {{ 
+        let bytes = <f32>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+    ($buffer:expr, $expr:expr => f64) => {{ 
+        let bytes = <f64>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => i8) => {{ 
+        let bytes = <i8>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => i16) => {{ 
+        let bytes = <i16>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => i32) => {{ 
+        let bytes = <i32>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => i64) => {{ 
+        let bytes = <i64>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
+
+
+    ($buffer:expr, $expr:expr => i128) => {{ 
+        let bytes = <i128>::to_le_bytes($expr);
+        $buffer[0..bytes.len()].copy_from_slice(&bytes);
+        bytes.len()
+    } as usize };
 
     /*********
     * STRING * 
     *********/
-    // Without tail and separator
-    ($buffer:expr, $index:expr, S($expr:expr $(,$extra:expr)*)) => {{
+    ($buffer:expr, $expr:expr => String) => {{ 
+        
+        // Write size of String
+        let bytes_size = ($expr.len() as u32).to_le_bytes();
+        $buffer[0..bytes_size.len()].copy_from_slice(&bytes_size);
 
-        // Bytes size used
-        let mut bytes_size:usize = 0;
-
-        // Get expression in slice of little endian bytes
-        let src = $expr.as_bytes();
-
-        // Copy to buffer via copy from slice
-        $buffer[$index..($index + src.len())].copy_from_slice(&src);
-
-        // Increment bytes_size
-        bytes_size += src.len();
-       
-        // Loop extra arguments of S()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, S($extra)); )*
-
-        // Return bytes_size
-        bytes_size
-
-    } as usize };
-
-    // With tail and separator
-    ($buffer:expr, $index:expr, S($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-
-        // Bytes size used
-        let mut bytes_size:usize = 0;
-
-        // Get expression in slice of little endian bytes
-        let src = $expr.as_bytes();
+        // Transform String as bytes slice
+        let bytes = $expr.as_bytes();
 
         // Copy to buffer via copy from slice
-        $buffer[$index..($index + src.len())].copy_from_slice(&src);
+        $buffer[bytes_size.len()..(bytes_size.len() + bytes.len())].copy_from_slice(&bytes);
 
-        // Increment bytes_size
-        bytes_size += src.len();
-
-        // Loop extra arguments of S()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, S($extra)); )*
-
-        // Expand tail arguments
-        bytes_size += to_buffer!($buffer, $index + bytes_size, $($tail)*);
-
-        // Return bytes_size
-        bytes_size
+        // Return size used
+        bytes_size.len() + bytes.len()
 
     } as usize };
 
     /***************
-    * TAMPON TRAIT *
+    * TAMPON TRAIT * 
     ***************/
-    // Without tail and separator
-    ($buffer:expr, $index:expr, T($expr:expr $(,$extra:expr)*)) => {{
-
-        // Copy bytes and get bytes size used
-        //let mut bytes_size:usize = tampon::Tampon::to_buffer(&$expr, &mut $buffer[$index..$buffer.len()]);
-        let buffer_len = $buffer.len();
-        let mut bytes_size:usize = $expr.to_buffer(&mut $buffer[$index..buffer_len]);
-       
-        // Loop extra arguments of T()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, T($extra)); )*
-
-        // Return bytes_size
-        bytes_size
-
-    } as usize };
-
-    // With tail and separator
-    ($buffer:expr, $index:expr, T($expr:expr $(,$extra:expr)*), $($tail:tt)*) => {{
-
-        // Copy bytes and get bytes size used
-        //let mut bytes_size:usize = tampon::Tampon::to_buffer(&$expr, &mut $buffer[$index..$buffer.len()]);
-        let buffer_len = $buffer.len();
-        let mut bytes_size:usize = $expr.to_buffer(&mut $buffer[$index..buffer_len]);
-
-        // Loop extra arguments of S()
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, T($extra)); )*
-
-        // Expand tail arguments
-        bytes_size += to_buffer!($buffer, $index + bytes_size, $($tail)*);
-
-        // Return bytes_size
-        bytes_size
-
-    } as usize };
-
-     /********
-    * SLICES *
-    *********/
-    // Slice without tail and separator
-    ($buffer:expr, $index:expr, $token:ident[$expr:expr $(,$extra:expr)*]) => {{
-
-        let mut bytes_size = 0;
-
-        // Loop elements in first slice expression
-        for elem in $expr.iter() {
-            bytes_size += to_buffer!($buffer, $index + bytes_size, $token(elem));
-        }
-
-        // Loop extra arguments of $token[]
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, $token[$extra]); )*
-        
-        // Return bytes_size
-        bytes_size
-
-
-    } as usize };
-    // Slice with tail and separator
-    ($buffer:expr, $index:expr, $token:ident[$expr:expr $(,$extra:expr)*], $($tail:tt)*) => {{
-
-        let mut bytes_size = 0;
-
-        // Loop elements in first slice expression
-        for elem in $expr.iter() {
-            bytes_size += to_buffer!($buffer, $index + bytes_size, $token(elem));
-        }
-
-        // Loop extra arguments of N[]
-        $( bytes_size += to_buffer!($buffer, $index + bytes_size, $token[$extra]); )*
-
-        // Expand tail arguments
-        bytes_size += to_buffer!($buffer, $index + bytes_size, $($tail)*);
-        
-        // Return bytes_size
-        bytes_size
-
+    ($buffer:expr, $expr:expr => $tampon:ident) => {{
+        $expr.to_buffer(&mut $buffer)
     } as usize };
 }

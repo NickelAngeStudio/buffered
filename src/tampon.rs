@@ -19,12 +19,12 @@
  * @ref
  * 
  * @todo
- * // TODO : Update doc macro links
+ * // TODO : Update doc macro links and description
  */
 
 /// ##### Trait used to make it's implementors compatible with tampon macros.
 /// This trait must be implemented by object that want to be able to use the [`token`](https://doc.rust-lang.org/reference/tokens.html) trait of tampon macros.
-pub trait Tampon {
+pub trait Tampon<T> {
     /// Size of the trait implementation in bytes.
     /// 
     /// Used by [`bytes_size!`] macro.
@@ -39,12 +39,12 @@ pub trait Tampon {
     /// Size of bytes written into buffer.
     fn to_buffer(&self, buffer : &mut [u8]) -> usize;
 
-    /// Update the implementation variables values from the buffer and return bytes read. Need a mutable reference to [`self`].
+    /// Create the implementation variables values from the buffer and return it with bytes read.
     /// 
     /// Used by [`from_buffer!`] macro.
     /// # Argument(s)
     /// * `buffer` - Slice reference to buffer to read from. 
     /// # Return
-    /// Size of bytes read from buffer.
-    fn from_buffer(&mut self, buffer : &[u8]) -> usize;
+    /// Tuple of new object and size of bytes read from buffer.
+    fn from_buffer(buffer : &[u8]) -> (T, usize);
 }
