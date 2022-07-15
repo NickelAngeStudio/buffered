@@ -6,7 +6,9 @@
 //! Crate that contains [`SAFE`](https://doc.rust-lang.org/nomicon/meet-safe-and-unsafe.html) 
 //! Rust [`functions`](https://doc.rust-lang.org/rust-by-example/fn.html), 
 //! [`macro`](https://doc.rust-lang.org/rust-by-example/macros.html) 
-//! and [`trait`](https://doc.rust-lang.org/rust-by-example/trait.html) to generate and manage [`buffer`](https://en.wikipedia.org/wiki/Data_buffer).
+//! and [`trait`](https://doc.rust-lang.org/rust-by-example/trait.html) to
+//! [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization) data structure or object
+//! and generate [`buffer`](https://en.wikipedia.org/wiki/Data_buffer).
 
  /// # Re-export for Public API
  #[doc(inline)]
@@ -37,13 +39,13 @@ pub mod tampon;
 #[doc(hidden)]
 pub mod bytes_size;
 
-/// to_buffer macro
+/// serialize macro
 #[doc(hidden)]
-pub mod to_buffer;
+pub mod serialize;
 
-/// from_buffer macro
+/// deserialize macro
 #[doc(hidden)]
-pub mod from_buffer;
+pub mod deserialize;
 
 
 // Tests module folder

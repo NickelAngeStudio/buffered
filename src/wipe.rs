@@ -21,14 +21,14 @@
  * @todo
  */
 
- /// ##### Wipe the buffer, overwritting it with zeroes.
- /// Wipe a sensible buffer to prevent memory scan retrieval for greater security.
+ /// ##### Wipe a buffer, overwriting content with zeroes.
+ /// Wipe a sensible buffer to prevent [`cold boot attack`](https://en.wikipedia.org/wiki/Cold_boot_attack) for greater security.
  /// 
  /// # Argument(s)
  /// * `buffer` - Mutable reference to vector of [`u8`] to wipe.
  /// 
  /// # Warning(s)
- /// It goes without saying that it can't be reversed.
+ /// <b>It goes without saying that it can't be reversed.</b>
  /// 
  /// # Example(s)
  /// ```

@@ -23,8 +23,8 @@
 
 use std::vec;
 
-use tampon::from_buffer;
-pub use tampon::{Tampon, bytes_size, to_buffer};
+use tampon::deserialize;
+pub use tampon::{Tampon, bytes_size, serialize};
 
 use crate::data::{do_vecs_match, do_vecs_eq_match};
 
@@ -65,14 +65,14 @@ impl Tampon<TamponS1> for TamponS1 {
         bytes_size!((self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):TamponS2, [self.v1]:u8, [self.v2]:f64, [self.v3]:TamponS2)
     }
 
-    fn to_buffer(&self, buffer : &mut [u8]) -> usize {
-        to_buffer!(buffer, to_size, (self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):TamponS2, [&self.v1]:u8, [&self.v2]:f64, [&self.v3]:TamponS2);
+    fn serialize(&self, buffer : &mut [u8]) -> usize {
+        serialize!(buffer, to_size, (self._f1):u8, (self._f2):u32, (self._f3):f64, (&self.f4):TamponS2, [&self.v1]:u8, [&self.v2]:f64, [&self.v3]:TamponS2);
         to_size
     }
 
-    fn from_buffer(buffer : &[u8]) -> (TamponS1, usize) {
+    fn deserialize(buffer : &[u8]) -> (TamponS1, usize) {
         
-        from_buffer!(buffer, from_size, (_f1):u8, (_f2):u32, (_f3):f64, (f4):TamponS2, [v1]:u8, [v2]:f64, [v3]:TamponS2);
+        deserialize!(buffer, from_size, (_f1):u8, (_f2):u32, (_f3):f64, (f4):TamponS2, [v1]:u8, [v2]:f64, [v3]:TamponS2);
 
         (TamponS1 {
             _f1,_f2,_f3,f4,v1,v2,v3
@@ -108,13 +108,13 @@ impl PartialEq for TamponS1 {
         bytes_size!((self._f1):u8, (self._f2):i128)
     }
 
-    fn to_buffer(&self, buffer : &mut [u8]) -> usize {
-        to_buffer!(buffer, to_size, (self._f1):u8, (self._f2):i128);
+    fn serialize(&self, buffer : &mut [u8]) -> usize {
+        serialize!(buffer, to_size, (self._f1):u8, (self._f2):i128);
         to_size
     }
 
-    fn from_buffer(buffer : &[u8]) -> (TamponS2, usize) {
-        from_buffer!(buffer, from_size, (_f1):u8, (_f2):i128);
+    fn deserialize(buffer : &[u8]) -> (TamponS2, usize) {
+        deserialize!(buffer, from_size, (_f1):u8, (_f2):i128);
 
         (TamponS2 {
             _f1,_f2

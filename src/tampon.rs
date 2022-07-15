@@ -22,29 +22,95 @@
  * // TODO : Update doc macro links and description
  */
 
-/// ##### Trait used to make it's implementors compatible with tampon macros.
-/// This trait must be implemented by object that want to be able to use the [`token`](https://doc.rust-lang.org/reference/tokens.html) trait of tampon macros.
+/// ##### Trait used to [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization) object.
+/// This trait must be implemented by object that needs to be [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization).
+/// 
+/// Functions can easily be implemented using macros of the same name (see example below).
+/// 
+/// <b>When implementing `Tampon<T>`, `T` should be the object that implement the trait Tampon.</b>
+/// 
+/// # Example(s)
+/// ```
+/// // Import trait Tampon, macro bytes_size, deserialize and serialize
+/// use tampon::{ Tampon, bytes_size, deserialize, serialize };
+/// 
+/// // Create a struct with variables
+/// pub struct TamponExample {
+///     f1:u8,
+///     f2:u32,
+///     f3:f64,
+///     v1:Vec<u8>,
+///     v2:Vec<f64>,
+/// }
+/// 
+/// // Implement Tampon for struct
+/// impl Tampon<TamponExample> for TamponExample {
+///     fn bytes_size(&self) -> usize {
+///         // Use bytes_size! macro to easily return the size in bytes
+///         bytes_size!((self.f1):u8, (self.f1):u32, (self.f3):f64, [self.v1]:u8, [self.v2]:f64)
+///     }
+/// 
+///     fn serialize(&self, buffer : &mut [u8]) -> usize {
+///         // Use serialize! macro to serialize object, get the size with optional parameter and return it
+///         serialize!(buffer, bytes_copied, (self.f1):u8, (self.f2):u32, (self.f3):f64, [self.v1]:u8, [self.v2]:f64);
+///         bytes_copied
+///     }
+///
+///     fn deserialize(buffer : &[u8]) -> (TamponExample, usize) {
+///         // Use deserialize! macro to deserialize data, get the size with optional parameter
+///         deserialize!(buffer, bytes_read, (f1):u8, (f2):u32, (f3):f64, [v1]:u8, [v2]:f64);
+///         // From buffer must return a pair of object + bytes read
+///         (TamponExample {f1,f2,f3,v1,v2 }, bytes_read)
+///     }
+/// }
+/// ```
 pub trait Tampon<T> {
-    /// Size of the trait implementation in bytes.
+    /// Size of the trait implementation in [`bytes`](https://en.wikipedia.org/wiki/Byte).
     /// 
-    /// Used by [`bytes_size!`] macro.
+    /// Use macro [`bytes_size!`] to easily return the size in bytes.
+    /// 
+    /// # Example(s)
+    /// ```ignore
+    /// fn bytes_size(&self) -> usize {
+    ///     bytes_size!((self.f1):u8, (self.f1):u32, (self.f3):f64, [self.v1]:u8, [self.v2]:f64)
+    /// }
+    /// ```
     fn bytes_size(&self) -> usize;
 
-    /// Write the trait implementation variables into the buffer and return bytes written. 
+    /// Serialize object variable into buffer. 
     /// 
-    /// Used by [`to_buffer!`] macro.
+    /// Use macro [`serialize!`] to easily serialize and get size in bytes.
+    /// 
     /// # Argument(s)
-    /// * `buffer` - Mutable slice reference to buffer to write into. 
+    /// * `buffer` - Mutable buffer slice reference to serialize into. 
+    /// 
+    /// # Example(s)
+    /// ```ignore
+    /// fn serialize(&self, buffer : &mut [u8]) -> usize {
+    ///     serialize!(buffer, bytes_copied, (self.f1):u8, (self.f2):u32, (self.f3):f64, [self.v1]:u8, [self.v2]:f64);
+    ///     bytes_copied
+    /// }
+    /// ```
+    /// 
     /// # Return
-    /// Size of bytes written into buffer.
-    fn to_buffer(&self, buffer : &mut [u8]) -> usize;
+    /// Bytes count written into buffer.
+    fn serialize(&self, buffer : &mut [u8]) -> usize;
 
-    /// Create the implementation variables values from the buffer and return it with bytes read.
+    /// Deserialize a new variable instance from buffer and return it with bytes read.
     /// 
-    /// Used by [`from_buffer!`] macro.
+    /// Use macro [`deserialize!`] to easily deserialize and get size in bytes.
     /// # Argument(s)
-    /// * `buffer` - Slice reference to buffer to read from. 
+    /// * `buffer` - Non-mutable buffer slice reference to deserialize from. 
+    /// 
+    /// # Example(s)
+    /// ```ignore
+    /// fn deserialize(buffer : &[u8]) -> (TamponExample, usize) {
+    ///     deserialize!(buffer, bytes_read, (f1):u8, (f2):u32, (f3):f64, [v1]:u8, [v2]:f64);
+    ///     (TamponExample{f1,f2,f3,v1,v2}, bytes_read)
+    /// }
+    /// ```
+    /// 
     /// # Return
-    /// Tuple of new object and size of bytes read from buffer.
-    fn from_buffer(buffer : &[u8]) -> (T, usize);
+    /// Tuple of new object and bytes read from buffer.
+    fn deserialize(buffer : &[u8]) -> (T, usize);
 }

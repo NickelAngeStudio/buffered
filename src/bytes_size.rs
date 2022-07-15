@@ -27,9 +27,9 @@
 /// which take 4 bytes.
 pub const SLICE_SIZE_IN_BYTES:usize = 4;
 
-/// ##### Variadic macro used to get the size of bytes of [`variables`](macro.bytes_size.html#compatible-variabless) and implementors of trait [`Tampon`](trait.Tampon.html). 
+/// ##### Variadic macro used to get the size in [`bytes`](https://en.wikipedia.org/wiki/Byte) of [`compatible variables`](macro.bytes_size.html#compatible-variabless) to [`serialize`](https://en.wikipedia.org/wiki/Serialization).
 /// 
-/// Variadic macro used to get the size of bytes of [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
+/// Variadic macro used to get the size in [`bytes`](https://en.wikipedia.org/wiki/Byte) of [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
 /// Also work with [`slice`] by using brackets `[]` instead of parenthesis `()`.
 ///
 /// # Usage

@@ -1,5 +1,5 @@
 /*
- * @file tampon/to_buffer.rs
+ * @file tampon/serialize.rs
  *
  * @module tampon
  *
@@ -21,67 +21,69 @@
  * @todo
  */
 
-/// ##### Variadic macro used to fill a buffer with multiple [`variables`](macro.to_buffer.html#compatible-variabless) and implementors of trait [`Tampon`](trait.Tampon.html). 
+/// ##### Variadic macro used to [`serialize`](https://en.wikipedia.org/wiki/Serialization) [`compatible variables`](macro.serialize.html#compatible-variabless) into a [`buffer`](https://en.wikipedia.org/wiki/Data_buffer). 
 /// 
 /// # Description
-/// Variadic macro used to fill a buffer with multiple [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
+/// Variadic macro used to [`serialize`](https://en.wikipedia.org/wiki/Serialization) [`bool`], [`Numeric types`](https://doc.rust-lang.org/reference/types/numeric.html) (except usize, isize), [`String`] and implementors of trait [`Tampon`](trait.Tampon.html).
 /// Also work with [`slice`] by using brackets `[]` instead of parenthesis `()`.
 /// 
 /// # Usage
-/// `let size = to_buffer!(buffer, index, [0..n](v1, ..., vn):type, [0..n][s1, ..., sn]:type);`
+/// `serialize!(buffer, [bytes_copied,] [0..n](v1, ..., vn):type, [0..n][s1, ..., sn]:type);`
 /// * `buffer` - Mutable reference to [`slice`] of [`u8`] to copy bytes into.
-/// * `index` - Index of the buffer to start copy into (use 0 to start at beginning).
+/// * `bytes_copied` - (Optional) Identifier here can be used to get the count of bytes copied into buffer.
 /// * One-to-many `(v1, ..., vn):type` where elements in `parenthesis()` are the variables to be copied into buffer.
 /// * One-to-many `[s1, ..., sn]:type` where elements in `brackets[]` are the slices to be copied into buffer.
 /// 
-/// # Return
-/// Size in bytes of all arguments copied as [`usize`].
-/// 
 /// # Example(s)
 /// ```
-/// // Import macro bytes_size and to_buffer
+/// // Import macro bytes_size and serialize
 /// use tampon::bytes_size;
-/// use tampon::to_buffer;
+/// use tampon::serialize;
 /// 
 /// // Declare multiple variables (numerics don't need to be same type)
 /// let a:u8 = 55;
-/// let b:u16 = 255;
-/// let c:usize = 12545566;
+/// let b:u8 = 255;
+/// let c:u32 = 12545566;
 /// let d:String = String::from("Example string");
 /// let e:Vec<i32> = vec![i32::MAX; 50];
 /// let f:Vec<f64> = vec![f64::MAX; 50];
+/// let g:Vec<f64> = vec![f64::MAX; 50];
 /// 
 /// // Get the size in bytes of all those elements in one macro call
-/// let size = bytes_size!(N(a,b,c), S(d), N[e,f]);
+/// let size = bytes_size!((a,b):u8, (c):u32, (d):String, [e]:i32, [f,g]:f64);
 /// 
 /// // Create a mutable buffer long enough to store variables
 /// let mut buffer:Vec<u8> = vec![0;size];
 /// 
-/// // Copy variables content into buffer
-/// let copy_size = to_buffer!(buffer, 0, N(a,b,c), S(d), N[e,f]);
+/// // Serialize variables content into buffer
+/// serialize!(buffer, bytes_copied, (a,b):u8, (c):u32, (d):String, [e]:i32, [f,g]:f64);
+/// 
+/// // (optional) Make sure bytes copied == bytes_size!
+/// assert!(size == bytes_copied);
 /// 
 /// // Print result
-/// println!("Bytes size of variables a,b,c,d,e,f is {}\nCopied size is {}\nResulted buffer={:?}", size, copy_size, buffer);
+/// println!("Bytes size of variables a,b,c,d,e,f is {}\nCopied size is {}\nResulted buffer={:?}", size, bytes_copied, buffer);
 /// ```
 /// ##### Buffer smaller than content will cause a panic! :
 /// ``` should_panic
-/// // Import macro bytes_size and to_buffer
+/// // Import macro bytes_size and serialize
 /// use tampon::bytes_size;
-/// use tampon::to_buffer;
+/// use tampon::serialize;
 /// 
 /// // Declare multiple variables (numerics don't need to be same type)
 /// let a:u8 = 55;
-/// let b:u16 = 255;
-/// let c:usize = 12545566;
+/// let b:u8 = 255;
+/// let c:u32 = 12545566;
 /// let d:String = String::from("Example string");
 /// let e:Vec<i32> = vec![i32::MAX; 50];
 /// let f:Vec<f64> = vec![f64::MAX; 50];
+/// let g:Vec<f64> = vec![f64::MAX; 50];
 /// 
 /// // Mutable buffer TOO SMALL to contains variable
 /// let mut buffer:Vec<u8> = vec![0;50];
 /// 
 /// // Copy variables content into buffer (will panic!)
-/// let copy_size = to_buffer!(buffer, 0, N(a,b,c), S(d), N[e,f]);
+/// serialize!(buffer, (a,b):u8, (c):u32, (d):String, [e]:i32, [f,g]:f64);
 /// ```
 /// 
 /// # Compatible variables(s)
@@ -97,69 +99,69 @@
 /// # Panic(s)
 /// * Will panic! if `buffer` length is smaller than all sources length combined.
 #[macro_export]
-macro_rules! to_buffer {
+macro_rules! serialize {
     
     // Expression without tail without bytes_read
     ($buffer:expr,($expr:expr $(,$extra:expr)*):$type:ident) => { {
-        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type);
+        let mut temporary_bytes_written = $crate::serialize_parser!($buffer, 0, ($expr $(,$extra)*):$type);
     }};
 
     // Expression with tail without bytes_read
     ($buffer:expr, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {{
-        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
+        let mut temporary_bytes_written = $crate::serialize_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
     }};
 
     // Expression without tail with bytes_written
     ($buffer:expr, $bytes_written:ident, ($expr:expr $(,$extra:expr)*):$type:ident) => {
         // Dispatch to parser and get bytes_written
-        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type);
+        let mut $bytes_written = $crate::serialize_parser!($buffer, 0, ($expr $(,$extra)*):$type);
     };
 
     // Expression with tail with bytes_written
     ($buffer:expr, $bytes_written:ident, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {
         // Dispatch to parser and get bytes_written
-        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
+        let mut $bytes_written = $crate::serialize_parser!($buffer, 0, ($expr $(,$extra)*):$type, $($tail)*);
     };
 
 
     // Slice without tail without bytes_read
     ($buffer:expr, [$expr:expr $(,$extra:expr)*]:$type:ident) => { {
-        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
+        let mut temporary_bytes_written = $crate::serialize_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
     }};
 
     // Slice with tail without bytes_read
     ($buffer:expr, [$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {{
-        let mut temporary_bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
+        let mut temporary_bytes_written = $crate::serialize_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
     }};
 
     // Slice without tail with bytes_written
     ($buffer:expr, $bytes_written:ident, [$expr:expr $(,$extra:expr)*]:$type:ident) => {
         // Dispatch to parser and get bytes_written
-        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
+        let mut $bytes_written = $crate::serialize_parser!($buffer, 0, [$expr $(,$extra)*]:$type);
     };
 
     // Slice with tail with bytes_written
     ($buffer:expr, $bytes_written:ident, [$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {
         // Dispatch to parser and get bytes_written
-        let mut $bytes_written = $crate::to_buffer_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
+        let mut $bytes_written = $crate::serialize_parser!($buffer, 0, [$expr $(,$extra)*]:$type, $($tail)*);
     };
 
 
 }
 
-/// Hidden extension of the to_buffer! macro. Not meant to be used directly (although it will still work).
+/// Hidden extension of the serialize! macro. Not meant to be used directly (although it will still work).
 #[doc(hidden)]
 #[macro_export]
-macro_rules! to_buffer_parser {
+macro_rules! serialize_parser {
     // Macro built with Incremental TT munchers pattern : https://danielkeep.github.io/tlborm/book/pat-incremental-tt-munchers.html
 
     // Expression without tail
     ($buffer:expr, $index:expr, ($expr:expr $(,$extra:expr)*):$type:ident) => {{
         let buffer_size = $buffer.len();
         // Init bytes_copied with the expression
-        let mut bytes_copied = $crate::to_buffer_retriever!($buffer[$index..buffer_size], $expr => $type);
+        let mut bytes_copied = $crate::serialize_retriever!($buffer[$index..buffer_size], $expr => $type);
         // Write extra to buffer and accumulate size
-        $(bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
+        $(bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
 
         // Return bytes_copied
         bytes_copied
@@ -169,13 +171,13 @@ macro_rules! to_buffer_parser {
     ($buffer:expr, $index:expr, ($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {{
         let buffer_size = $buffer.len();
         // Init bytes_copied with the expression
-        let mut bytes_copied = $crate::to_buffer_retriever!($buffer[$index..buffer_size], $expr => $type);
+        let mut bytes_copied = $crate::serialize_retriever!($buffer[$index..buffer_size], $expr => $type);
 
         // Write extra to buffer and accumulate bytes_copied
-        $(bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
+        $(bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => $type); )*
 
         // Write and accumulate tail TT
-        bytes_copied += $crate::to_buffer_parser!($buffer, $index + bytes_copied, $($tail)*);
+        bytes_copied += $crate::serialize_parser!($buffer, $index + bytes_copied, $($tail)*);
 
         // Return bytes_copied
         bytes_copied
@@ -187,9 +189,9 @@ macro_rules! to_buffer_parser {
         let mut bytes_copied = 0;
 
         // Get value from buffer into array
-        bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
+        bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
         // Get value from buffer into array for extra
-        $( bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
+        $( bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
 
         // Return bytes copied
         bytes_copied
@@ -202,12 +204,12 @@ macro_rules! to_buffer_parser {
         let mut bytes_copied = 0;
 
         // Get value from buffer into array
-        bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
+        bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $expr => [$type]);
 
         // Get value from buffer into array for extra
-        $( bytes_copied += $crate::to_buffer_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
+        $( bytes_copied += $crate::serialize_retriever!($buffer[$index + bytes_copied..buffer_size], $extra => [$type]); )*
         // Parse tail
-        bytes_copied += $crate::to_buffer_parser!($buffer, $index + bytes_copied, $($tail)*);
+        bytes_copied += $crate::serialize_parser!($buffer, $index + bytes_copied, $($tail)*);
 
         // Return bytes copied
         bytes_copied
@@ -217,10 +219,10 @@ macro_rules! to_buffer_parser {
 }
 
 
-/// Hidden extension of the to_buffer! macro. Parse tokens. Not meant to be used directly (although it will still work).
+/// Hidden extension of the serialize! macro. Parse tokens. Not meant to be used directly (although it will still work).
 #[doc(hidden)]
 #[macro_export]
-macro_rules! to_buffer_retriever {
+macro_rules! serialize_retriever {
 
     // Slice affectator
     ($buffer:expr, $expr:expr => [$type:ident]) => {{
@@ -235,7 +237,7 @@ macro_rules! to_buffer_retriever {
 
         // Loop and accumulate and element of slice
         for elem in $expr.iter() {
-            bytes_copied += $crate::to_buffer_retriever!($buffer[bytes_copied..buffer_size], *elem => $type);
+            bytes_copied += $crate::serialize_retriever!($buffer[bytes_copied..buffer_size], *elem => $type);
         } 
 
         // Return bytes_copied
@@ -250,9 +252,9 @@ macro_rules! to_buffer_retriever {
     ($buffer:expr, $expr:expr => bool) => {{ 
         // Translate bytes into u8
         if($expr) {
-            $crate::to_buffer_retriever!($buffer, 1 => u8)
+            $crate::serialize_retriever!($buffer, 1 => u8)
         } else {
-            $crate::to_buffer_retriever!($buffer, 0 => u8)
+            $crate::serialize_retriever!($buffer, 0 => u8)
         }
         
     } as usize };
@@ -372,6 +374,6 @@ macro_rules! to_buffer_retriever {
     * TAMPON TRAIT * 
     ***************/
     ($buffer:expr, $expr:expr => $tampon:ident) => {{
-        $expr.to_buffer(&mut $buffer)
+        $expr.serialize(&mut $buffer)
     } as usize };
 }

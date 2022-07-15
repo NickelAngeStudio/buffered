@@ -21,8 +21,8 @@
  * @todo
  */
 
-/// ##### Compare 2 buffers and return the absolute difference.
-/// Compare 2 buffers and return the absolute difference.
+/// ##### Compare 2 buffers and return the [`absolute difference`](https://en.wikipedia.org/wiki/Absolute_difference).
+/// Compare 2 buffers and return the [`absolute difference`](https://en.wikipedia.org/wiki/Absolute_difference).
 /// 
 /// If both buffers are identical in size AND content, this function will return 0.
 /// # Example(s)

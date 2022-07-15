@@ -25,9 +25,9 @@
 #[cfg(test)]
 mod bytes_size_test;
 
-// to_buffer!, from_buffer! macros tests
+// serialize!, deserialize! macros tests
 #[cfg(test)]
-mod to_from_buffer_test;
+mod de_serialize_test;
 
 // buffer! integration macro tests
 #[cfg(test)]

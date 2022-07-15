@@ -23,10 +23,10 @@
 
 /// ##### Generate a random [`u8`] buffer with specific size and [`charset`](buffer_generator_charset/index.html).
 /// 
-/// The generated buffer can be used as password, as a crypto mask, etc...
+/// The generated buffer can be used as [`random seed`](https://en.wikipedia.org/wiki/Random_seed), password, crypto mask, etc...
 /// 
-/// You have to supply your own random number generator that implement the [`rand::Rng`] trait. ([`rand`] crates supplies
-/// a lot of those.)
+/// You have to supply your own [`random number generator`](https://en.wikipedia.org/wiki/Random_number_generation) that implement the [`rand::Rng`] trait.
+/// Thankfully, the [`rand`] crates supplies a lot of those.
 /// # Argument(s)
 /// * `rng` - Mutable [`rand::Rng`] reference used to generate the buffer.
 /// * `size` - Size of the buffer generated.
@@ -53,8 +53,8 @@
 /// ```
 /// 
 /// # Panic(s)
-/// * generate_buffer() will panic if no `charset` buffer_generator_flag matches.
-/// * generate_buffer() will panic if `size` == 0.
+/// * Will panic if no [`buffer_generator_charset`] matches.
+/// * Will panic if `size == 0`.
 pub fn generate_buffer(rng : &mut impl rand::Rng, size : usize, charset: u8) -> Vec<u8> {
 
     // Make sure size generated > 0
