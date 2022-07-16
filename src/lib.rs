@@ -1,13 +1,11 @@
 #![doc(html_playground_url = "https://play.rust-lang.org/")]
-
-// TODO: Add logo
-//#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/67743099?v=4")]
+#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/67743099?v=4")]
 
 //! Crate that contains [`SAFE`](https://doc.rust-lang.org/nomicon/meet-safe-and-unsafe.html) 
 //! Rust [`functions`](https://doc.rust-lang.org/rust-by-example/fn.html), 
 //! [`macro`](https://doc.rust-lang.org/rust-by-example/macros.html) 
 //! and [`trait`](https://doc.rust-lang.org/rust-by-example/trait.html) to
-//! [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization) data structure or object
+//! [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization) data structure and/or object
 //! and generate [`buffer`](https://en.wikipedia.org/wiki/Data_buffer).
 
  /// # Re-export for Public API
@@ -47,6 +45,9 @@ pub mod serialize;
 #[doc(hidden)]
 pub mod deserialize;
 
+/// buffer! macro
+#[doc(hidden)]
+pub mod buffer;
 
 // Tests module folder
 #[cfg(test)]

@@ -82,7 +82,7 @@ macro_rules! bytes_size {
 
     // With tail
     (($expr:expr $(,$extra:expr)*):$type:ident, $($tail:tt)*) => {{
-        bytes_size!($($tail)*) + $crate::bytes_size_var!($expr => $type) $(+$crate::bytes_size_var!($extra => $type))*
+        $crate::bytes_size!($($tail)*) + $crate::bytes_size_var!($expr => $type) $(+$crate::bytes_size_var!($extra => $type))*
     } as usize };
 
     // Without tail
@@ -92,7 +92,7 @@ macro_rules! bytes_size {
 
     // With tail
     ([$expr:expr $(,$extra:expr)*]:$type:ident, $($tail:tt)*) => {{
-        bytes_size!($($tail)*)  + $crate::bytes_size_var!($expr => [$type]) $(+$crate::bytes_size_var!($extra => [$type]))*
+        $crate::bytes_size!($($tail)*)  + $crate::bytes_size_var!($expr => [$type]) $(+$crate::bytes_size_var!($extra => [$type]))*
     } as usize };
 }
 

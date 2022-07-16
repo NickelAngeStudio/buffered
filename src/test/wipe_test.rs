@@ -34,12 +34,14 @@ fn wipe_generated_buffer() {
                 buffer_generator_charset::UPPER_CASE | buffer_generator_charset::SYMBOL;
 
     let mut buffer = crate::generate_buffer(&mut rng, BUFFER_SIZE, charset);
+    let buf_comp: Vec<u8> = vec![0;BUFFER_SIZE];
 
     println!("Buffer before wipe = {:?}", buffer);
 
     crate::wipe_buffer(&mut buffer);
 
-    // TODO: Add compare
-
     println!("Buffer after wipe = {:?}", buffer);
+
+    // Assert that the buffer is wiped
+    assert!(crate::compare_buffers(&buffer, &buf_comp) == 0);
 }

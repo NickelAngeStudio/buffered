@@ -54,7 +54,7 @@ fn deserialize_too_small(){
 
 #[test]
 // Test to > from buffer of 1 bool
-fn to_deserialize_1_bool(){
+fn serialize_deserialize_1_bool(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_var!(var_size, to_b0);
@@ -78,7 +78,7 @@ fn to_deserialize_1_bool(){
 
 #[test]
 // Test to > from buffer of 2 bool
-fn to_deserialize_2_bools(){
+fn serialize_deserialize_2_bools(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_var!(var_size, to_b0, to_b1);
@@ -102,7 +102,7 @@ fn to_deserialize_2_bools(){
 
 #[test]
 // Test to > from buffer of 10 bool
-fn to_deserialize_10_bools(){
+fn serialize_deserialize_10_bools(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_var!(var_size, to_b0, to_b1, to_b2, to_b3, to_b4, to_b5, to_b6, to_b7, to_b8, to_b9);
@@ -128,7 +128,7 @@ fn to_deserialize_10_bools(){
 
 #[test]
 // Test to > from buffer of 1 bool slice
-fn to_deserialize_1_bool_slice(){
+fn serialize_deserialize_1_bool_slice(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_slice!(var_size, 0, to_bs0);
@@ -153,7 +153,7 @@ fn to_deserialize_1_bool_slice(){
 
 #[test]
 // Test to > from buffer of 2 bool slice
-fn to_deserialize_2_bool_slices(){
+fn serialize_deserialize_2_bool_slices(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_slice!(var_size, 0, to_bs0, to_bs1);
@@ -179,7 +179,7 @@ fn to_deserialize_2_bool_slices(){
 
 #[test]
 // Test to > from buffer of 10 bool slices
-fn to_deserialize_10_bool_slices(){
+fn serialize_deserialize_10_bool_slices(){
     // Create variables and get their size
     let mut var_size = 0;
     boolean_slice!(var_size, 0, to_bs0, to_bs1, to_bs2, to_bs3, to_bs4, to_bs5, to_bs6, to_bs7, to_bs8, to_bs9);
@@ -209,7 +209,7 @@ fn to_deserialize_10_bool_slices(){
 
 #[test]
 // Test to > from buffer 1 numeric type
-fn to_deserialize_1_numeric(){
+fn serialize_deserialize_1_numeric(){
     let mut var_size = 0;
     numeric_var!(var_size, to_n0:i8);
 
@@ -232,7 +232,7 @@ fn to_deserialize_1_numeric(){
 
 #[test]
 // Test to > from buffer 2 numeric type
-fn to_deserialize_2_numerics(){
+fn serialize_deserialize_2_numerics(){
     let mut var_size = 0;
     numeric_var!(var_size, to_n0:f32, to_n1:i128);
 
@@ -254,7 +254,7 @@ fn to_deserialize_2_numerics(){
 
 #[test]
 // Test to > from buffer all numeric type
-fn to_deserialize_all_numerics(){
+fn serialize_deserialize_all_numerics(){
     let mut var_size = 0;
     numeric_var!(var_size, to_n0:u8, to_n1:u16, to_n2:u32, to_n3:u64, to_n4:u128, to_n5:f32, to_n6:f64,
         to_n7:i8, to_n8:i16, to_n9:i32, to_n10:i64, to_n11:i128);
@@ -282,7 +282,7 @@ fn to_deserialize_all_numerics(){
 
 #[test]
 // Test to > from buffer 1 numeric slice
-fn to_deserialize_1_numeric_slice(){
+fn serialize_deserialize_1_numeric_slice(){
     let mut var_size = 0;
     numeric_slice!(var_size, 0, to_ns0:i8);
 
@@ -305,7 +305,7 @@ fn to_deserialize_1_numeric_slice(){
 
 #[test]
 // Test to > from buffer 2 numeric slices
-fn to_deserialize_2_numeric_slices(){
+fn serialize_deserialize_2_numeric_slices(){
     let mut var_size = 0;
     numeric_slice!(var_size, 0, to_ns0:f32, to_ns1:i128, to_ns2:f32);
 
@@ -328,7 +328,7 @@ fn to_deserialize_2_numeric_slices(){
 
 #[test]
 // Test to > from buffer all numeric slices
-fn to_deserialize_all_numeric_slices(){
+fn serialize_deserialize_all_numeric_slices(){
     let mut var_size = 0;
     numeric_slice!(var_size, 0, to_ns0:u8, to_ns1:u16, to_ns2:u32, to_ns3:u64, to_ns4:u128, to_ns5:f32, to_ns6:f64,
         to_ns7:i8, to_ns8:i16, to_ns9:i32, to_ns10:i64, to_ns11:i128);
@@ -357,7 +357,7 @@ fn to_deserialize_all_numeric_slices(){
 
 #[test]
 // Test to > from buffer 1 string
-fn to_deserialize_1_string(){
+fn serialize_deserialize_1_string(){
     let mut var_size = 0;
     string_var!(var_size, STRINGS, 0, to_s0);
 
@@ -380,7 +380,7 @@ fn to_deserialize_1_string(){
 
 #[test]
 // Test to > from buffer 2 strings
-fn to_deserialize_2_strings(){
+fn serialize_deserialize_2_strings(){
     let mut var_size = 0;
     string_var!(var_size, STRINGS, 0, to_s0, to_s1);
 
@@ -402,7 +402,7 @@ fn to_deserialize_2_strings(){
 
 #[test]
 // Test to > from buffer 10 strings
-fn to_deserialize_10_strings(){
+fn serialize_deserialize_10_strings(){
     let mut var_size = 0;
     string_var!(var_size, STRINGS, 0, to_s0, to_s1, to_s2, to_s3, to_s4, to_s5, to_s6, to_s7, to_s8, to_s9);
 
@@ -427,7 +427,7 @@ fn to_deserialize_10_strings(){
 
 #[test]
 // Test to > from buffer 1 string slice
-fn to_deserialize_1_string_slice(){
+fn serialize_deserialize_1_string_slice(){
     let mut var_size = 0;
     string_slice!(var_size, STRINGS, 0, to_ss0);
 
@@ -449,7 +449,7 @@ fn to_deserialize_1_string_slice(){
 
 #[test]
 // Test to > from buffer 2 string slices
-fn to_deserialize_2_string_slices(){
+fn serialize_deserialize_2_string_slices(){
     let mut var_size = 0;
     string_slice!(var_size, STRINGS, 0, to_ss0, to_ss1);
 
@@ -471,7 +471,7 @@ fn to_deserialize_2_string_slices(){
 
 #[test]
 // Test to > from buffer 10 string slices
-fn to_deserialize_10_string_slices(){
+fn serialize_deserialize_10_string_slices(){
     let mut var_size = 0;
     string_slice!(var_size, STRINGS, 0, to_ss0, to_ss1, to_ss2, to_ss3, to_ss4, to_ss5, to_ss6, to_ss7, to_ss8, to_ss9);
 
@@ -498,7 +498,7 @@ fn to_deserialize_10_string_slices(){
 
 #[test]
 // Test to > from buffer 1 implementor of Tampon trait
-fn to_deserialize_1_tampon(){
+fn serialize_deserialize_1_tampon(){
     let mut var_size = 0;
     tampon_var!(var_size, to_t0:TamponS1);
 
@@ -520,7 +520,7 @@ fn to_deserialize_1_tampon(){
 
 #[test]
 // Test to > from buffer 2 implementors of Tampon trait
-fn to_deserialize_2_tampons(){
+fn serialize_deserialize_2_tampons(){
     let mut var_size = 0;
     tampon_var!(var_size, to_t0:TamponS1, to_t1:TamponS2);
 
@@ -542,7 +542,7 @@ fn to_deserialize_2_tampons(){
 
 #[test]
 // Test to > from buffer 10 implementors of Tampon trait
-fn to_deserialize_10_tampons(){
+fn serialize_deserialize_10_tampons(){
     let mut var_size = 0;
     tampon_var!(var_size, to_t0:TamponS1, to_t1:TamponS2, to_t2:TamponS1, to_t3:TamponS1, to_t4:TamponS1,
         to_t5:TamponS2, to_t6:TamponS2, to_t7:TamponS1, to_t8:TamponS1, to_t9:TamponS2);
@@ -569,7 +569,7 @@ fn to_deserialize_10_tampons(){
 
 #[test]
 // Test to > from buffer 1 slice of implementor of Tampon trait
-fn to_deserialize_1_tampon_slice(){
+fn serialize_deserialize_1_tampon_slice(){
     let mut var_size = 0;
     tampon_slice!(var_size, 0, to_ts0:TamponS1);
 
@@ -591,7 +591,7 @@ fn to_deserialize_1_tampon_slice(){
 
 #[test]
 // Test to > from buffer 2 slices of implementor of Tampon trait
-fn to_deserialize_2_tampon_slices(){
+fn serialize_deserialize_2_tampon_slices(){
     let mut var_size = 0;
     tampon_slice!(var_size, 0, to_ts0:TamponS1, to_ts1:TamponS1, to_ts2:TamponS2);
 
@@ -613,7 +613,7 @@ fn to_deserialize_2_tampon_slices(){
 
 #[test]
 // Test to > from buffer 10 slices of implementor of Tampon trait
-fn to_deserialize_10_tampon_slices(){
+fn serialize_deserialize_10_tampon_slices(){
     let mut var_size = 0;
     tampon_slice!(var_size, 0, to_ts0:TamponS1, to_ts1:TamponS2, to_ts2:TamponS1, to_ts3:TamponS1, to_ts4:TamponS1,
         to_ts5:TamponS2, to_ts6:TamponS2, to_ts7:TamponS1, to_ts8:TamponS1, to_ts9:TamponS2);
@@ -641,7 +641,7 @@ fn to_deserialize_10_tampon_slices(){
 
 #[test]
 // Test to > from buffer with everythings at the same time
-fn to_deserialize_everythings(){
+fn serialize_deserialize_everythings(){
     let mut var_size = 0;
     boolean_var!(var_size, to_b0, to_b1, to_b2, to_b3, to_b4, to_b5, to_b6, to_b7, to_b8, to_b9);
     boolean_slice!(var_size, 0, to_bs0, to_bs1, to_bs2, to_bs3, to_bs4, to_bs5, to_bs6, to_bs7, to_bs8, to_bs9);

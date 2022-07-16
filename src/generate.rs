@@ -85,7 +85,9 @@ pub fn generate_buffer(rng : &mut impl rand::Rng, size : usize, charset: u8) -> 
 /// and `& (Bitwise AND)` to generate a charset range with available [`constants`](#constants) flags.
 /// # Diagram(s)
 /// ##### Ascii table showing u8 characters.
-/// // TODO: Add ascii table link
+/// 
+/// <img src="https://raw.githubusercontent.com/NickelAngeStudio/tampon/main/img/ascii_table.jpg" height="438" width="640">
+/// 
 /// # Example(s)
 /// ```
 /// // Import `buffer_generator_charset`

@@ -19,7 +19,7 @@
  * @ref
  * 
  * @todo
- * // TODO : Update doc macro links and description
+ * 
  */
 
 /// ##### Trait used to [`serialize / deserialize`](https://en.wikipedia.org/wiki/Serialization) object.
