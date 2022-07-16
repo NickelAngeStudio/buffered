@@ -1,0 +1,14 @@
+[package]
+name = "tampon"
+version = "1.0.0"
+authors = ["Baphomat <baphomat@nickelange.studio>"]
+edition = "2021"
+description = "Contains SAFE Rust functions, macro and trait to serialize / deserialize data structure and/or object and generate buffer."
+keywords = ["buffer", "data-structures", "serialize", "macro", "generate"]
+categories = ["data-structures", "encoding", "caching", "cryptography"]
+repository = "https://github.com/NickelAngeStudio/tampon"
+license = "MIT"
+readme = "README.md"
+
+[dependencies]
+rand = "0.8.5"
